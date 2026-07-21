@@ -117,7 +117,7 @@ export default function Header({
       return "Users";
     }
 
-    return "ProjectPulse";
+    return "TaborFlow";
   }, [location.pathname]);
 
   const handleLogout = async () => {

@@ -1,6 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Brand } from "../Brand";
 
 import { ME_QUERY }
   from "../../graphql/queries/auth";
@@ -75,14 +76,7 @@ export default function Sidebar({
           border-slate-800
         "
       >
-        <h1
-          className="
-            text-xl
-            font-bold
-          "
-        >
-          ProjectPulse
-        </h1>
+        <Brand inverse to="/app" />
 
         <button
           type="button"
