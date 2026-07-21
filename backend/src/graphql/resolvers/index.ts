@@ -10,7 +10,7 @@ export const resolvers = {
     ...authResolver.Query,
 
     health: () =>
-      "ProjectPulse API is running 🚀"
+      "TaborFlow API is running 🚀"
   },
 
   Mutation: {
