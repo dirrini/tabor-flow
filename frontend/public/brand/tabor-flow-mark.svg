@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" role="img" aria-labelledby="title desc">
+  <title id="title">Símbolo TaborFlow</title>
+  <desc id="desc">T estilizado com linhas progressivas de fluxo.</desc>
+  <rect width="52" height="52" rx="14" fill="#13243a"/>
+  <path d="M12 13h28v7H29.5v20h-7V20H12z" fill="#fff"/>
+  <path d="M13 27h6v5h-6zm0 9h13v5H13zm20-9h7v5h-7zm-3 9h10v5H30z" fill="#e87937"/>
+</svg>

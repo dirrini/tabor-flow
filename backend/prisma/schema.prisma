@@ -19,6 +19,10 @@ model Project {
   users       ProjectUser[]
   products    Product[]
   integrationClients IntegrationClientProject[]
+  tenantId    Int
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
 
 model Task {
@@ -36,11 +40,26 @@ model User {
   id           Int      @id @default(autoincrement())
   name         String
   email        String   @unique
-  passwordHash String
+  passwordHash String?
+  googleSubject String? @unique
+  tenantId     Int
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   role         String
   createdAt    DateTime @default(now())
   projects     ProjectUser[]
   tasks        TaskUser[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+model Tenant {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  users     User[]
+  projects  Project[]
 }
 
 model ProjectUser {

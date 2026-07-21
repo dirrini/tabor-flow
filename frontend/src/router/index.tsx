@@ -10,11 +10,12 @@ import Timeline from "../pages/Timeline";
 import Users from "../pages/Users";
 import AppLayout from "../components/layout/AppLayout";
 import ProtectedRoute from "../components/layout/ProtectedRoute";
+import Landing from "../pages/Landing";
 
 export const router =
   createBrowserRouter([
     {
-      path: "/",
+      path: "/app",
       element: (
         <ProtectedRoute>
           <AppLayout />
@@ -48,8 +49,10 @@ export const router =
         }
       ]
     },
+    { path: "/", element: <Landing /> },
     {
       path: "/login",
       element: <Login />
-    }
+    },
+    { path: "/register", element: <Login mode="register" /> }
   ]);

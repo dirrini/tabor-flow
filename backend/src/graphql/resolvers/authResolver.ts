@@ -11,6 +11,14 @@ import {
   type GraphQLContext
 } from "../context";
 import { prisma } from "../../lib/prisma";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client();
+
+function tenantSlug(name: string) {
+  const base = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "workspace";
+  return `${base}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 const manageableRoles = [
   "PROJECT_MANAGER",
@@ -18,6 +26,9 @@ const manageableRoles = [
 ];
 
 export const authResolver = {
+  User: {
+    tenant: (user: { tenantId: number }) => prisma.tenant.findUnique({ where: { id: user.tenantId } })
+  },
   Query: {
     me: (
       _: unknown,
@@ -34,6 +45,7 @@ export const authResolver = {
 
       return prisma.user.findMany({
         where: {
+          tenantId: context.currentUser!.tenantId,
           role: {
             not: "ADMIN"
           }
@@ -54,9 +66,9 @@ export const authResolver = {
       }
     ) => {
       const user =
-        await prisma.user.findUnique({
+        await prisma.user.findFirst({
           where: {
-            email: args.email
+            email: args.email.trim().toLowerCase()
           }
         });
 
@@ -64,7 +76,7 @@ export const authResolver = {
         !user ||
         !verifyPassword(
           args.password,
-          user.passwordHash
+          user.passwordHash ?? ""
         )
       ) {
         throw new GraphQLError(
@@ -80,10 +92,40 @@ export const authResolver = {
       return {
         token: createAuthToken({
           userId: user.id,
-          role: user.role
+          role: user.role,
+          tenantId: user.tenantId
         }),
         user
       };
+    },
+    register: async (_: unknown, args: { name: string; organizationName: string; email: string; password: string }) => {
+      const email = args.email.trim().toLowerCase();
+      if (args.password.length < 8) throw new GraphQLError("Password must be at least 8 characters.", { extensions: { code: "BAD_USER_INPUT" } });
+      if (await prisma.user.findFirst({ where: { email } })) throw new GraphQLError("An account with this email already exists.", { extensions: { code: "BAD_USER_INPUT" } });
+      const user = await prisma.$transaction(async (tx) => {
+        const tenant = await tx.tenant.create({ data: { name: args.organizationName.trim(), slug: tenantSlug(args.organizationName) } });
+        return tx.user.create({ data: { name: args.name.trim(), email, passwordHash: hashPassword(args.password), role: "ADMIN", tenantId: tenant.id }, include: { tenant: true } });
+      });
+      return { token: createAuthToken({ userId: user.id, role: user.role, tenantId: user.tenantId }), user };
+    },
+    loginWithGoogle: async (_: unknown, args: { credential: string }) => {
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      if (!clientId) throw new GraphQLError("Google sign-in is not configured.", { extensions: { code: "SERVICE_UNAVAILABLE" } });
+      const ticket = await googleClient.verifyIdToken({ idToken: args.credential, audience: clientId });
+      const payload = ticket.getPayload();
+      if (!payload?.sub || !payload.email || !payload.email_verified) throw new GraphQLError("Google account could not be verified.", { extensions: { code: "UNAUTHENTICATED" } });
+      const email = payload.email.toLowerCase();
+      let user = await prisma.user.findFirst({ where: { OR: [{ googleSubject: payload.sub }, { email }] }, include: { tenant: true } });
+      if (!user) {
+        user = await prisma.$transaction(async (tx) => {
+          const name = payload.name || email.split("@")[0];
+          const tenant = await tx.tenant.create({ data: { name: `${name}'s workspace`, slug: tenantSlug(name) } });
+          return tx.user.create({ data: { name, email, googleSubject: payload.sub, role: "ADMIN", tenantId: tenant.id }, include: { tenant: true } });
+        });
+      } else if (!user.googleSubject) {
+        user = await prisma.user.update({ where: { id: user.id }, data: { googleSubject: payload.sub }, include: { tenant: true } });
+      }
+      return { token: createAuthToken({ userId: user.id, role: user.role, tenantId: user.tenantId }), user };
     },
     createUser: async (
       _: unknown,
@@ -119,10 +161,8 @@ export const authResolver = {
       }
 
       const existingUser =
-        await prisma.user.findUnique({
-          where: {
-            email
-          }
+        await prisma.user.findFirst({
+          where: { email, tenantId: context.currentUser!.tenantId }
         });
 
       if (existingUser) {
@@ -144,6 +184,7 @@ export const authResolver = {
             args.input.password
           ),
           role
+          ,tenantId: context.currentUser!.tenantId
         }
       });
     },
@@ -162,9 +203,9 @@ export const authResolver = {
       requireUserManager(context);
 
       const user =
-        await prisma.user.findUnique({
+        await prisma.user.findFirst({
           where: {
-            id: Number(args.id)
+            id: Number(args.id), tenantId: context.currentUser!.tenantId
           }
         });
 
@@ -202,9 +243,9 @@ export const authResolver = {
 
       if (email && email !== user.email) {
         const existingUser =
-          await prisma.user.findUnique({
+          await prisma.user.findFirst({
             where: {
-              email
+              email, tenantId: context.currentUser!.tenantId
             }
           });
 
@@ -256,7 +297,7 @@ export const authResolver = {
       if (
         !verifyPassword(
           args.input.currentPassword,
-          currentUser.passwordHash
+          currentUser.passwordHash ?? ""
         )
       ) {
         throw new GraphQLError(

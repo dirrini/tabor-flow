@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 52" role="img" aria-labelledby="title desc">
+  <title id="title">TaborFlow</title>
+  <desc id="desc">T estilizado com linhas progressivas de fluxo ao lado do nome TaborFlow.</desc>
+  <rect width="52" height="52" rx="14" fill="#13243a"/>
+  <path d="M12 13h28v7H29.5v20h-7V20H12z" fill="#fff"/>
+  <path d="M13 27h6v5h-6zm0 9h13v5H13zm20-9h7v5h-7zm-3 9h10v5H30z" fill="#e87937"/>
+  <text x="66" y="35" fill="#13243a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="800" letter-spacing="-1">Tabor</text>
+  <text x="143" y="35" fill="#e87937" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="600" letter-spacing="-.8">Flow</text>
+</svg>

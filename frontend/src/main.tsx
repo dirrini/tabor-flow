@@ -8,6 +8,7 @@ import { apolloClient }
   from "./lib/apollo";
 
 import App from "./App";
+import { I18nProvider } from "./lib/i18n";
 
 // @ts-ignore
 import "./index.css";
@@ -16,10 +17,10 @@ ReactDOM.createRoot(
   document.getElementById("root")!
 ).render(
   <React.StrictMode>
-    <ApolloProvider
+    <I18nProvider><ApolloProvider
       client={apolloClient}
     >
       <App />
-    </ApolloProvider>
+    </ApolloProvider></I18nProvider>
   </React.StrictMode>
 );

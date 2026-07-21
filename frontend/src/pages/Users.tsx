@@ -236,7 +236,7 @@ export default function Users() {
               text-slate-500
             "
           >
-            Manage who can access ProjectPulse.
+            Manage who can access TaborFlow.
           </p>
         </div>
 
