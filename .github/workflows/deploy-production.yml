@@ -5,24 +5,25 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-production.yml"
+
+concurrency:
+  group: production-backend
+  cancel-in-progress: false
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-  ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
-  IMAGE_TAG: ${{ github.sha }}
-  API_HOST: ${{ vars.API_HOST }}
-  APP_HOST: ${{ vars.APP_HOST }}
-  ACM_CERTIFICATE_ID: ${{ vars.ACM_CERTIFICATE_ID }}
-  ALB_SUBNET_1: ${{ vars.ALB_SUBNET_1 }}
-  ALB_SUBNET_2: ${{ vars.ALB_SUBNET_2 }}
-  ALB_SUBNET_3: ${{ vars.ALB_SUBNET_3 }}
-  ALB_SUBNET_4: ${{ vars.ALB_SUBNET_4 }}
-  ALB_SUBNET_5: ${{ vars.ALB_SUBNET_5 }}
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  IMAGE_NAME: taborflow-api
+  ARTIFACT_REPOSITORY: taborflow
+  CLOUD_RUN_SERVICE: taborflow-api
+  MIGRATION_JOB: taborflow-migrate
 
 jobs:
   deploy:
-    name: Build and Deploy
+    name: Build, migrate and deploy API
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -33,92 +34,56 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker authentication
+        run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
 
       - name: Build and push API image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          push: true
-          tags: ${{ env.ECR_REGISTRY }}/projectpulse-api:${{ env.IMAGE_TAG }}
-
-      - name: Build and push web image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          push: true
-          build-args: |
-            VITE_API_URL=https://${{ vars.API_HOST }}/graphql
-          tags: ${{ env.ECR_REGISTRY }}/projectpulse-web:${{ env.IMAGE_TAG }}
-
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-
-      - name: Configure kubeconfig
+        env:
+          IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         run: |
-          aws eks update-kubeconfig \
-            --name "${{ vars.EKS_CLUSTER_NAME }}" \
-            --region "${{ vars.AWS_REGION }}"
-
-      - name: Apply production secrets
-        run: |
-          kubectl create namespace projectpulse --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret generic projectpulse-secrets \
-            -n projectpulse \
-            --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            --from-literal=AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
-            --from-literal=SEED_INTEGRATION_CLIENT_ID="${{ secrets.SEED_INTEGRATION_CLIENT_ID }}" \
-            --from-literal=SEED_INTEGRATION_CLIENT_SECRET="${{ secrets.SEED_INTEGRATION_CLIENT_SECRET }}" \
-            --from-literal=SEED_INTEGRATION_NAME="${{ vars.SEED_INTEGRATION_NAME }}" \
-            --from-literal=SEED_INTEGRATION_SCOPES="${{ vars.SEED_INTEGRATION_SCOPES }}" \
-            --from-literal=SEED_INTEGRATION_PROJECT_EXTERNAL_CODE="${{ vars.SEED_INTEGRATION_PROJECT_EXTERNAL_CODE }}" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Render Kubernetes manifests
-        run: |
-          mkdir -p rendered
-          kubectl kustomize k8s/aws \
-            | python3 -c 'import os, sys; print(os.path.expandvars(sys.stdin.read()))' \
-            > rendered/projectpulse.yaml
-          if grep -n '\${' rendered/projectpulse.yaml; then
-            echo "Unresolved placeholders found in rendered manifest."
-            exit 1
-          fi
-
-      - name: Delete previous migration job
-        run: kubectl delete job projectpulse-migrate -n projectpulse --ignore-not-found
-
-      - name: Apply Kubernetes manifests
-        run: kubectl apply -f rendered/projectpulse.yaml
+          docker build --tag "$IMAGE" ./backend
+          docker push "$IMAGE"
 
       - name: Run database migrations
+        env:
+          IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         run: |
-          kubectl wait --for=create job/projectpulse-migrate -n projectpulse --timeout=60s
+          gcloud run jobs update "$MIGRATION_JOB" \
+            --project="$GCP_PROJECT_ID" \
+            --region="$GCP_REGION" \
+            --image="$IMAGE"
+          gcloud run jobs execute "$MIGRATION_JOB" \
+            --project="$GCP_PROJECT_ID" \
+            --region="$GCP_REGION" \
+            --wait
 
-          if ! kubectl wait --for=condition=complete job/projectpulse-migrate -n projectpulse --timeout=420s; then
-            echo "Migration job did not complete. Showing diagnostics."
-            kubectl get job projectpulse-migrate -n projectpulse -o wide
-            kubectl get pods -n projectpulse -l job-name=projectpulse-migrate -o wide
-            kubectl describe job projectpulse-migrate -n projectpulse
-            kubectl describe pods -n projectpulse -l job-name=projectpulse-migrate
-            kubectl logs job/projectpulse-migrate -n projectpulse --all-containers=true --tail=200 || true
-            kubectl get events -n projectpulse --sort-by=.lastTimestamp | tail -50
-            exit 1
-          fi
-
-          kubectl logs job/projectpulse-migrate -n projectpulse --all-containers=true
-
-      - name: Check rollouts
+      - name: Deploy API to Cloud Run
+        env:
+          IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         run: |
-          kubectl rollout status deployment/projectpulse-api -n projectpulse --timeout=180s
-          kubectl rollout status deployment/projectpulse-web -n projectpulse --timeout=180s
+          gcloud run services update "$CLOUD_RUN_SERVICE" \
+            --project="$GCP_PROJECT_ID" \
+            --region="$GCP_REGION" \
+            --image="$IMAGE" \
+            --quiet
 
-      - name: Show ingress
-        run: kubectl get ingress projectpulse -n projectpulse
+      - name: Verify deployment
+        run: |
+          API_URL="$(gcloud run services describe "$CLOUD_RUN_SERVICE" \
+            --project="$GCP_PROJECT_ID" \
+            --region="$GCP_REGION" \
+            --format='value(status.url)')"
+          curl --fail --show-error --silent --retry 5 --retry-delay 5 \
+            --header "Content-Type: application/json" \
+            --data '{"query":"{ health }"}' \
+            "$API_URL/graphql"
