@@ -25,4 +25,4 @@ COPY --from=deps /app/prisma ./prisma
 
 EXPOSE 4000
 
-CMD ["npm", "run", "start:migrated"]
+CMD ["npm", "start"]
