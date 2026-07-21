@@ -31,6 +31,7 @@ function hashApiKey(
 }
 
 async function main() {
+  const tenant = await prisma.tenant.upsert({ where: { slug: "projectpulse" }, update: {}, create: { name: "ProjectPulse", slug: "projectpulse" } });
   const adminEmail =
     process.env.SEED_ADMIN_EMAIL ??
     "admin@projectpulse.local";
@@ -39,19 +40,19 @@ async function main() {
     "admin123";
 
   await prisma.user.upsert({
-    where: {
-      email: adminEmail
-    },
+    where: { tenantId_email: { tenantId: tenant.id, email: adminEmail } },
     update: {
       name: "ProjectPulse Admin",
       role: "ADMIN"
+      ,tenantId: tenant.id
     },
     create: {
       name: "ProjectPulse Admin",
       email: adminEmail,
       passwordHash:
         hashPassword(adminPassword),
-      role: "ADMIN"
+      role: "ADMIN",
+      tenantId: tenant.id
     }
   });
 
@@ -67,6 +68,7 @@ async function main() {
             "Migrating legacy CRM system",
           progress: 72,
           status: "ON_TRACK"
+          ,tenantId: tenant.id
         },
         {
           name:
@@ -75,6 +77,7 @@ async function main() {
             "Modernizing the mobile UX",
           progress: 45,
           status: "AT_RISK"
+          ,tenantId: tenant.id
         },
         {
           name:
@@ -83,6 +86,7 @@ async function main() {
             "Moving workloads to Oracle Cloud",
           progress: 90,
           status: "COMPLETED"
+          ,tenantId: tenant.id
         }
       ]
     });

@@ -176,9 +176,10 @@ export async function createGraphQLContext(
 
   if (payload) {
     const currentUser =
-      await prisma.user.findUnique({
+      await prisma.user.findFirst({
         where: {
-          id: payload.userId
+          id: payload.userId,
+          tenantId: payload.tenantId
         }
       });
 

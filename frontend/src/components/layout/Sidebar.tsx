@@ -116,7 +116,7 @@ export default function Sidebar({
         <ul className="space-y-2">
           <li>
             <Link
-              to="/"
+              to="/app"
               onClick={onClose}
               className="
                 block
@@ -132,7 +132,7 @@ export default function Sidebar({
 
           <li>
             <Link
-              to="/projects"
+              to="/app/projects"
               onClick={onClose}
               className="
                 block
@@ -149,7 +149,7 @@ export default function Sidebar({
           {canViewTimeline && (
             <li>
               <Link
-                to="/timeline"
+                to="/app/timeline"
                 onClick={onClose}
                 className="
                   block
@@ -167,7 +167,7 @@ export default function Sidebar({
           {canManageUsers && (
             <li>
               <Link
-                to="/users"
+                to="/app/users"
                 onClick={onClose}
                 className="
                   block

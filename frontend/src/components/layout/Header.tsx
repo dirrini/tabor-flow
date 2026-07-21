@@ -95,25 +95,25 @@ export default function Header({
     const pathname =
       location.pathname;
 
-    if (pathname === "/") {
+    if (pathname === "/app") {
       return "Dashboard";
     }
 
-    if (pathname === "/projects") {
+    if (pathname === "/app/projects") {
       return "Projects";
     }
 
     if (
-      pathname.startsWith("/projects/")
+      pathname.startsWith("/app/projects/")
     ) {
       return "Project details";
     }
 
-    if (pathname === "/timeline") {
+    if (pathname === "/app/timeline") {
       return "Timeline";
     }
 
-    if (pathname === "/users") {
+    if (pathname === "/app/users") {
       return "Users";
     }
 

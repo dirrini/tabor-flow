@@ -8,10 +8,12 @@ function projectScopeWhere(
   currentUser: {
     id: number;
     role: string;
+    tenantId: number;
   }
 ) {
   if (currentUser.role === "PROJECT_MANAGER") {
     return {
+      tenantId: currentUser.tenantId,
       users: {
         some: {
           userId: currentUser.id
@@ -20,9 +22,7 @@ function projectScopeWhere(
     };
   }
 
-  return {
-    id: -1
-  };
+  return { tenantId: currentUser.tenantId };
 }
 
 export const dashboardResolver = {

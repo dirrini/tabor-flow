@@ -3,6 +3,7 @@ import { dashboardResolver } from "./dashboardResolver";
 import { authResolver } from "./authResolver";
 
 export const resolvers = {
+  User: authResolver.User,
   Query: {
     ...projectResolver.Query,
     ...dashboardResolver.Query,

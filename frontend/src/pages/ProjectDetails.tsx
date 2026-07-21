@@ -382,7 +382,7 @@ export default function ProjectDetails() {
       }
     });
 
-    navigate("/projects");
+    navigate("/app/projects");
   };
 
   const handleCreateTask = async (
@@ -506,7 +506,7 @@ export default function ProjectDetails() {
     return (
       <div>
         <Link
-          to="/projects"
+          to="/app/projects"
           className="
             mb-4
             inline-block
@@ -562,7 +562,7 @@ export default function ProjectDetails() {
   return (
     <div>
       <Link
-        to="/projects"
+        to="/app/projects"
         className="
           mb-4
           inline-block
@@ -671,7 +671,7 @@ export default function ProjectDetails() {
         "
       >
         <Link
-          to={`/projects/${id}`}
+          to={`/app/projects/${id}`}
           className={`
             rounded-lg
             px-4
@@ -692,7 +692,7 @@ export default function ProjectDetails() {
         {canManageCurrentProject && (
           <>
             <Link
-              to={`/projects/${id}/users`}
+              to={`/app/projects/${id}/users`}
               className={`
                 rounded-lg
                 px-4
@@ -711,7 +711,7 @@ export default function ProjectDetails() {
             </Link>
 
             <Link
-              to={`/projects/${id}/tasks`}
+              to={`/app/projects/${id}/tasks`}
               className={`
                 rounded-lg
                 px-4
@@ -730,7 +730,7 @@ export default function ProjectDetails() {
             </Link>
 
             <Link
-              to={`/projects/${id}/products`}
+              to={`/app/projects/${id}/products`}
               className={`
                 rounded-lg
                 px-4

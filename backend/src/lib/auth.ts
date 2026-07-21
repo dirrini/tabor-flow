@@ -9,6 +9,7 @@ import {
 type AuthTokenPayload = {
   userId: number;
   role: string;
+  tenantId: number;
 };
 
 type IntegrationTokenPayload = {
@@ -174,6 +175,7 @@ export function verifyAuthToken(
   if (
     typeof payload.userId !== "number" ||
     typeof payload.role !== "string" ||
+    typeof payload.tenantId !== "number" ||
     typeof payload.expiresAt !== "number" ||
     payload.expiresAt < Date.now()
   ) {
@@ -182,7 +184,8 @@ export function verifyAuthToken(
 
   return {
     userId: payload.userId,
-    role: payload.role
+    role: payload.role,
+    tenantId: payload.tenantId
   };
 }
 

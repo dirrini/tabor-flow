@@ -29,6 +29,9 @@ The application is being developed as a portfolio project focused on showcasing 
 * TypeScript end-to-end
 * Dashboard with project cards
 * Responsive layout
+* Public landing page in Portuguese (Brazil) and English
+* Email registration and Google sign-in
+* Tenant-isolated workspaces
 
 ### Planned Features
 
@@ -125,6 +128,8 @@ The project is configured for hot reload development:
 * Backend restarts automatically through tsx watch
 
 No manual rebuilds are required during normal development.
+
+For Google sign-in, create a Web OAuth client in Google Cloud and set the same client ID as `GOOGLE_CLIENT_ID` in the backend and `VITE_GOOGLE_CLIENT_ID` in the frontend. Add the local and production origins to the OAuth client's authorized JavaScript origins. Apply the Prisma migrations before starting an upgraded environment.
 
 ---
 

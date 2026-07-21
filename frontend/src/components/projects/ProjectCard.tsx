@@ -22,7 +22,7 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   return (
     <Link
-      to={`/projects/${id}`}
+      to={`/app/projects/${id}`}
       className="
         block
         bg-white

@@ -37,10 +37,12 @@ function projectScopeWhere(
   currentUser: {
     id: number;
     role: string;
+    tenantId: number;
   }
 ) {
   if (currentUser.role === "PROJECT_MANAGER") {
     return {
+      tenantId: currentUser.tenantId,
       users: {
         some: {
           userId: currentUser.id
@@ -49,9 +51,7 @@ function projectScopeWhere(
     };
   }
 
-  return {
-    id: -1
-  };
+  return { tenantId: currentUser.tenantId };
 }
 
 async function ensureCanManageProject(
@@ -62,12 +62,11 @@ async function ensureCanManageProject(
     requireProjectManager(context);
 
   const projectUser =
-    await prisma.projectUser.findUnique({
+    await prisma.projectUser.findFirst({
       where: {
-        projectId_userId: {
-          projectId,
-          userId: currentUser.id
-        }
+        projectId,
+        userId: currentUser.id,
+        project: { tenantId: currentUser.tenantId }
       }
     });
 
@@ -412,8 +411,9 @@ export const projectResolver = {
         await prisma.project.findMany({
           where:
             currentUser.role === "ADMIN"
-              ? undefined
+              ? { tenantId: currentUser.tenantId }
               : {
+                  tenantId: currentUser.tenantId,
                   users: {
                     some: {
                       userId: currentUser.id
@@ -450,6 +450,7 @@ export const projectResolver = {
         await prisma.project.create({
         data: {
           ...args.input,
+          tenantId: currentUser.tenantId,
           externalCode:
             args.input.externalCode?.trim() ||
             null,
@@ -750,9 +751,10 @@ export const projectResolver = {
       );
 
       const user =
-        await prisma.user.findUnique({
+        await prisma.user.findFirst({
           where: {
-            id: Number(args.input.userId)
+            id: Number(args.input.userId),
+            tenantId: context.currentUser!.tenantId
           }
         });
 
