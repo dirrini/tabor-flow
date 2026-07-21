@@ -54,3 +54,5 @@ prisma/dev.db-journal
 # Docker
 # ==========================
 docker-data/
+# Google GitHub Actions temporary credentials
+gha-creds-*.json
