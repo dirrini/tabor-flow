@@ -5,6 +5,7 @@ export const authSchema = `#graphql
     name: String!
     email: String!
     role: String!
+    emailVerified: Boolean!
     tenant: Tenant!
   }
 
@@ -46,6 +47,8 @@ export const authSchema = `#graphql
 
     register(name: String!, organizationName: String!, email: String!, password: String!): AuthPayload!
     loginWithGoogle(credential: String!): AuthPayload!
+    verifyEmail(token: String!): Boolean!
+    resendVerificationEmail: Boolean!
 
     createUser(
       input: CreateUserInput!

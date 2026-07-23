@@ -34,6 +34,34 @@ export function requireAuth(
     );
   }
 
+  if (!context.currentUser.emailVerifiedAt) {
+    throw new GraphQLError(
+      "Email verification required.",
+      {
+        extensions: {
+          code: "EMAIL_NOT_VERIFIED"
+        }
+      }
+    );
+  }
+
+  return context.currentUser;
+}
+
+export function requireAuthenticatedUser(
+  context: GraphQLContext
+) {
+  if (!context.currentUser) {
+    throw new GraphQLError(
+      "Authentication required.",
+      {
+        extensions: {
+          code: "UNAUTHENTICATED"
+        }
+      }
+    );
+  }
+
   return context.currentUser;
 }
 

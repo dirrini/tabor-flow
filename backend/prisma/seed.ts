@@ -44,7 +44,8 @@ async function main() {
     update: {
       name: "ProjectPulse Admin",
       role: "ADMIN"
-      ,tenantId: tenant.id
+      ,tenantId: tenant.id,
+      emailVerifiedAt: new Date()
     },
     create: {
       name: "ProjectPulse Admin",
@@ -52,7 +53,8 @@ async function main() {
       passwordHash:
         hashPassword(adminPassword),
       role: "ADMIN",
-      tenantId: tenant.id
+      tenantId: tenant.id,
+      emailVerifiedAt: new Date()
     }
   });
 

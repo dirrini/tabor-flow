@@ -19,6 +19,7 @@ type MeQueryData = {
     name: string;
     email: string;
     role: string;
+    emailVerified: boolean;
   } | null;
 };
 
@@ -78,6 +79,15 @@ export default function ProtectedRoute({
         state={{
           from: location
         }}
+      />
+    );
+  }
+
+  if (!data.me.emailVerified) {
+    return (
+      <Navigate
+        to="/verify-email"
+        replace
       />
     );
   }
