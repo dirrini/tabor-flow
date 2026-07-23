@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: projectpulse-migrate
-  namespace: projectpulse
+  name: tabor-flow-migrate
+  namespace: tabor-flow
 spec:
   backoffLimit: 2
   template:
@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: migrate
-          image: projectpulse-api:latest
+          image: tabor-flow-api:latest
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -18,6 +18,6 @@ spec:
             - npx prisma migrate deploy && npx tsx prisma/seed.ts
           envFrom:
             - configMapRef:
-                name: projectpulse-config
+                name: tabor-flow-config
             - secretRef:
-                name: projectpulse-secrets
+                name: tabor-flow-secrets

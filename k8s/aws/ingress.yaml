@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: projectpulse
-  namespace: projectpulse
+  name: tabor-flow
+  namespace: tabor-flow
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
@@ -20,7 +20,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: projectpulse-web
+                name: tabor-flow-web
                 port:
                   name: http
     - host: ${API_HOST}
@@ -30,6 +30,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: projectpulse-api
+                name: tabor-flow-api
                 port:
                   name: http

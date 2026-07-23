@@ -66,10 +66,10 @@ jobs:
         working-directory: .
         run: |
           docker build \
-            --build-arg VITE_API_URL=https://pulse-api.example.com/graphql \
-            -t projectpulse-web-ci \
+            --build-arg VITE_API_URL=https://tabor-flow-api.example.com/graphql \
+            -t tabor-flow-web-ci \
             ./frontend
 
       - name: Validate Nginx config
         working-directory: .
-        run: docker run --rm projectpulse-web-ci nginx -t
+        run: docker run --rm tabor-flow-web-ci nginx -t

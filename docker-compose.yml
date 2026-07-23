@@ -2,17 +2,17 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: projectpulse-db
+    container_name: tabor-flow-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: projectpulse
+      POSTGRES_DB: taborflow
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d projectpulse"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d taborflow"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,7 +23,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: projectpulse-api
+    container_name: tabor-flow-api
     ports:
       - "4000:4000"
     volumes:
@@ -39,7 +39,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: projectpulse-web
+    container_name: tabor-flow-web
     ports:
       - "5173:5173"
     volumes:

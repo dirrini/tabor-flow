@@ -1,6 +1,6 @@
-# ProjectPulse Kubernetes Deployment
+# TaborFlow Kubernetes Deployment
 
-This folder contains a first production-oriented Kubernetes setup for ProjectPulse.
+This folder contains a first production-oriented Kubernetes setup for TaborFlow.
 
 ## Layout
 
@@ -36,9 +36,9 @@ Set these production GitHub Environment secrets:
 For manual deploys, create the production secret manually or with your secret manager:
 
 ```bash
-kubectl create secret generic projectpulse-secrets \
-  --namespace projectpulse \
-  --from-literal=DATABASE_URL='postgresql://USER:PASSWORD@HOST:5432/projectpulse' \
+kubectl create secret generic tabor-flow-secrets \
+  --namespace tabor-flow \
+  --from-literal=DATABASE_URL='postgresql://USER:PASSWORD@HOST:5432/taborflow' \
   --from-literal=AUTH_SECRET='replace-with-a-long-random-secret'
 ```
 
@@ -47,10 +47,10 @@ Do not commit real secret values.
 ## Build Images
 
 ```bash
-docker build -t projectpulse-api:latest ./backend
+docker build -t tabor-flow-api:latest ./backend
 docker build \
-  --build-arg VITE_API_URL=https://api.projectpulse.example.com/graphql \
-  -t projectpulse-web:latest \
+  --build-arg VITE_API_URL=https://api.tabor-flow.example.com/graphql \
+  -t tabor-flow-web:latest \
   ./frontend
 ```
 
@@ -69,19 +69,19 @@ For production, prefer creating the secret from AWS Secrets Manager or a CI/CD s
 
 ## Run Migrations
 
-The base includes a `projectpulse-migrate` Job. For repeat deployments, delete and recreate it when you need to run migrations again:
+The base includes a `tabor-flow-migrate` Job. For repeat deployments, delete and recreate it when you need to run migrations again:
 
 ```bash
-kubectl delete job projectpulse-migrate -n projectpulse --ignore-not-found
+kubectl delete job tabor-flow-migrate -n tabor-flow --ignore-not-found
 kubectl apply -k k8s/aws
-kubectl logs job/projectpulse-migrate -n projectpulse
+kubectl logs job/tabor-flow-migrate -n tabor-flow
 ```
 
 ## Useful Checks
 
 ```bash
-kubectl get pods -n projectpulse
-kubectl get ingress -n projectpulse
-kubectl logs deploy/projectpulse-api -n projectpulse
-kubectl describe ingress projectpulse -n projectpulse
+kubectl get pods -n tabor-flow
+kubectl get ingress -n tabor-flow
+kubectl logs deploy/tabor-flow-api -n tabor-flow
+kubectl describe ingress tabor-flow -n tabor-flow
 ```

@@ -31,10 +31,10 @@ function hashApiKey(
 }
 
 async function main() {
-  const tenant = await prisma.tenant.upsert({ where: { slug: "projectpulse" }, update: {}, create: { name: "ProjectPulse", slug: "projectpulse" } });
+  const tenant = await prisma.tenant.upsert({ where: { slug: "tabor-flow" }, update: { name: "TaborFlow" }, create: { name: "TaborFlow", slug: "tabor-flow" } });
   const adminEmail =
     process.env.SEED_ADMIN_EMAIL ??
-    "admin@projectpulse.local";
+    "admin@taborflow.local";
   const adminPassword =
     process.env.SEED_ADMIN_PASSWORD ??
     "admin123";
@@ -42,13 +42,13 @@ async function main() {
   await prisma.user.upsert({
     where: { tenantId_email: { tenantId: tenant.id, email: adminEmail } },
     update: {
-      name: "ProjectPulse Admin",
+      name: "TaborFlow Admin",
       role: "ADMIN"
       ,tenantId: tenant.id,
       emailVerifiedAt: new Date()
     },
     create: {
-      name: "ProjectPulse Admin",
+      name: "TaborFlow Admin",
       email: adminEmail,
       passwordHash:
         hashPassword(adminPassword),

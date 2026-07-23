@@ -70,13 +70,11 @@ type I18nValue = {
   tr: (portuguese: string, english: string) => string;
 };
 
-const localeStorageKey = "taborflow.locale";
-const legacyLocaleStorageKey = "projectpulse.locale";
+const localeStorageKey = "tabor-flow.locale";
 const I18nContext = createContext<I18nValue | null>(null);
 
 function getInitialLocale(): Locale {
-  const storedLocale = localStorage.getItem(localeStorageKey) ??
-    localStorage.getItem(legacyLocaleStorageKey);
+  const storedLocale = localStorage.getItem(localeStorageKey);
   return storedLocale === "en" ? "en" : "pt-BR";
 }
 
@@ -85,7 +83,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem(localeStorageKey, locale);
-    localStorage.removeItem(legacyLocaleStorageKey);
     document.documentElement.lang = locale;
   }, [locale]);
 

@@ -5,9 +5,9 @@ resources:
   - ingress-class.yaml
   - ingress.yaml
 images:
-  - name: projectpulse-api
-    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/projectpulse-api
+  - name: tabor-flow-api
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/tabor-flow-api
     newTag: ${IMAGE_TAG}
-  - name: projectpulse-web
-    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/projectpulse-web
+  - name: tabor-flow-web
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/tabor-flow-web
     newTag: ${IMAGE_TAG}
