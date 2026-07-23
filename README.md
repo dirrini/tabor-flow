@@ -12,6 +12,7 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 - TaborFlow SVG brand assets and favicon
 - Email and password registration and login
 - Email verification through Resend before workspace access
+- Email invitations for workspace members with password setup on acceptance
 - Sign in with Google through Google Identity Services
 - Automatic access to the protected workspace after authentication
 
@@ -171,6 +172,8 @@ The frontend and backend must use the same Google OAuth Web Client ID. Add both 
 ### Email verification
 
 Email/password accounts receive a signed verification link that expires after 60 minutes. Until the address is confirmed, the authenticated user can only access the verification screen or request a new email. Accounts authenticated through Google are considered verified by the identity provider.
+
+Users added by a workspace administrator do not receive a temporary password. They receive a signed invitation link that expires after seven days, confirm the invitation, and define their own password before accessing the workspace. If an invited email later authenticates with Google, the Google identity is linked to that existing account and tenant.
 
 `RESEND_FROM_EMAIL` must use a sender address on a domain verified in Resend. In production, keep `RESEND_API_KEY` in Google Cloud Secret Manager and set `APP_URL=https://tabor-flow.dirrini.tech` on the Cloud Run service.
 

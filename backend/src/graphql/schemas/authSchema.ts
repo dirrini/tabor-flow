@@ -24,7 +24,6 @@ export const authSchema = `#graphql
   input CreateUserInput {
     name: String!
     email: String!
-    password: String!
     role: String!
   }
 
@@ -49,6 +48,7 @@ export const authSchema = `#graphql
     loginWithGoogle(credential: String!): AuthPayload!
     verifyEmail(token: String!): Boolean!
     resendVerificationEmail: Boolean!
+    acceptInvitation(token: String!, password: String!): AuthPayload!
 
     createUser(
       input: CreateUserInput!

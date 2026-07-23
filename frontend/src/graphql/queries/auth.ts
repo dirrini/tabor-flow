@@ -29,6 +29,21 @@ export const RESEND_VERIFICATION_EMAIL_MUTATION = gql`
   }
 `;
 
+export const ACCEPT_INVITATION_MUTATION = gql`
+  mutation AcceptInvitation($token: String!, $password: String!) {
+    acceptInvitation(token: $token, password: $password) {
+      token
+      user {
+        id
+        name
+        email
+        role
+        emailVerified
+      }
+    }
+  }
+`;
+
 export const ME_QUERY = gql`
   query Me {
     me {

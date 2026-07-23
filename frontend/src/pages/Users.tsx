@@ -260,7 +260,7 @@ export default function Users() {
               hover:bg-slate-700
             "
           >
-            {tr("Novo usuário", "New user")}
+            {tr("Convidar usuário", "Invite user")}
           </button>
         )}
       </div>

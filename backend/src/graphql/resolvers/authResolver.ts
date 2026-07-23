@@ -14,8 +14,10 @@ import {
 import { prisma } from "../../lib/prisma";
 import { OAuth2Client } from "google-auth-library";
 import {
+  sendInvitationEmail,
   sendVerificationEmail,
-  verifyEmailVerificationToken
+  verifyEmailVerificationToken,
+  verifyInvitationToken
 } from "../../lib/emailVerification";
 
 const googleClient = new OAuth2Client();
@@ -152,13 +154,27 @@ export const authResolver = {
       await sendVerificationEmail(user);
       return true;
     },
+    acceptInvitation: async (_: unknown, args: { token: string; password: string }) => {
+      if (args.password.length < 8) throw new GraphQLError("Password must be at least 8 characters.", { extensions: { code: "BAD_USER_INPUT" } });
+      const payload = verifyInvitationToken(args.token);
+      if (!payload) throw new GraphQLError("Invitation link is invalid or expired.", { extensions: { code: "BAD_USER_INPUT" } });
+      const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+      if (!user || user.email !== payload.email || user.passwordHash) throw new GraphQLError("Invitation link is invalid, expired, or already used.", { extensions: { code: "BAD_USER_INPUT" } });
+      const acceptedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: hashPassword(args.password), emailVerifiedAt: user.emailVerifiedAt ?? new Date() }
+      });
+      return {
+        token: createAuthToken({ userId: acceptedUser.id, role: acceptedUser.role, tenantId: acceptedUser.tenantId }),
+        user: acceptedUser
+      };
+    },
     createUser: async (
       _: unknown,
       args: {
         input: {
           name: string;
           email: string;
-          password: string;
           role: string;
         };
       },
@@ -185,10 +201,7 @@ export const authResolver = {
         );
       }
 
-      const existingUser =
-        await prisma.user.findFirst({
-          where: { email, tenantId: context.currentUser!.tenantId }
-        });
+      const existingUser = await prisma.user.findFirst({ where: { email } });
 
       if (existingUser) {
         throw new GraphQLError(
@@ -205,17 +218,17 @@ export const authResolver = {
         data: {
           name: args.input.name.trim(),
           email,
-          passwordHash: hashPassword(
-            args.input.password
-          ),
-          role
-          ,tenantId: context.currentUser!.tenantId
-        }
+          role,
+          tenantId: context.currentUser!.tenantId
+        },
+        include: { tenant: true }
       });
       try {
-        await sendVerificationEmail(createdUser);
+        await sendInvitationEmail(createdUser, createdUser.tenant.name);
       } catch (error) {
-        console.error("Unable to send user verification email.", error);
+        await prisma.user.delete({ where: { id: createdUser.id } });
+        console.error("Unable to send user invitation email.", error);
+        throw new GraphQLError("Could not send the invitation email.", { extensions: { code: "SERVICE_UNAVAILABLE" } });
       }
       return createdUser;
     },
