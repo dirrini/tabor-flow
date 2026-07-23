@@ -18,6 +18,8 @@ services:
       retries: 10
 
   backend:
+    env_file:
+      - ./backend/.env.local
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
@@ -32,6 +34,8 @@ services:
         condition: service_healthy
 
   frontend:
+    env_file:
+      - ./frontend/.env.local
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
