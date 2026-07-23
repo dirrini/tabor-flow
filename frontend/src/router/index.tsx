@@ -13,6 +13,7 @@ import ProtectedRoute from "../components/layout/ProtectedRoute";
 import Landing from "../pages/Landing";
 import VerifyEmail from "../pages/VerifyEmail";
 import AcceptInvitation from "../pages/AcceptInvitation";
+import Workspace from "../pages/Workspace";
 
 export const router =
   createBrowserRouter([
@@ -48,6 +49,10 @@ export const router =
         {
           path: "users",
           element: <Users />
+        },
+        {
+          path: "workspace",
+          element: <Workspace />
         }
       ]
     },

@@ -52,6 +52,12 @@ export const ME_QUERY = gql`
       email
       role
       emailVerified
+      tenant {
+        id
+        name
+        slug
+        plan
+      }
     }
   }
 `;

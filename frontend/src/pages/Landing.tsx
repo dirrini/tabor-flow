@@ -1,18 +1,84 @@
 ﻿import { ArrowRight, BarChart3, Check, ChevronRight, CircleUserRound, Globe2, LayoutDashboard, ShieldCheck, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Brand } from "../components/Brand";
 import { useI18n } from "../lib/i18n";
+import {
+  formatPlanPrice,
+  premiumAnnualPrice,
+  premiumMonthlyPrice
+} from "../lib/plans";
 
 const copy = {
   "pt-BR": { navFeatures:"Recursos",navTimeline:"Timeline",navSecurity:"Segurança",login:"Entrar",signup:"Começar grátis",eyebrow:"Projetos complexos, fluxo simples",title:"Transforme planos em entregas — no ritmo certo.",body:"Centralize projetos, pessoas, tarefas e prazos. O TaborFlow dá à sua equipe uma visão clara do que está acontecendo agora e do que vem depois.",cta:"Criar meu workspace",see:"Explorar a Timeline",proof:"Um ambiente isolado e seguro para cada organização",overview:"Tudo que importa, sem perder o contexto.",overviewBody:"Do portfólio executivo ao detalhe de cada tarefa, todos trabalham com a mesma fonte de verdade.",dashboard:"Dashboard executivo",dashboardBody:"Acompanhe projetos, tarefas concluídas, capacidade do time e riscos em tempo real.",projects:"Projetos organizados",projectsBody:"Reúna progresso, responsáveis, produtos, integrações e decisões em um só lugar.",people:"Responsabilidade clara",peopleBody:"Distribua o trabalho por pessoa, datas e status — sem planilhas paralelas.",timelineTag:"O coração do TaborFlow",timelineTitle:"Uma Timeline que mostra o trabalho como ele realmente acontece.",timelineBody:"Visualize dependências, sobreposições e capacidade por pessoa. Ajuste períodos, identifique atrasos e veja cada entrega em contexto.",timelineCta:"Planeje visualmente",today:"Hoje",todo:"A fazer",doing:"Em andamento",done:"Concluído",why:"Da estratégia à execução",whyTitle:"Menos status meeting. Mais fluxo.",whyBody:"O TaborFlow conecta a visão de liderança ao dia a dia da equipe, mantendo cada projeto rastreável e cada responsável alinhado.",security:"Seus dados pertencem ao seu time.",securityBody:"Cada organização opera em um workspace isolado. Usuários autenticados acessam somente o ambiente e os projetos do próprio tenant.",finalTitle:"Dê visibilidade ao trabalho. Libere o fluxo.",finalBody:"Crie seu workspace e organize o próximo projeto em minutos.",footer:"Gestão de projetos com clareza e ritmo."},
   en: { navFeatures:"Features",navTimeline:"Timeline",navSecurity:"Security",login:"Log in",signup:"Start free",eyebrow:"Complex projects, simple flow",title:"Turn plans into delivery — at the right pace.",body:"Bring projects, people, tasks, and deadlines together. TaborFlow gives your team a clear view of what is happening now and what comes next.",cta:"Create my workspace",see:"Explore the Timeline",proof:"A secure, isolated workspace for every organization",overview:"Everything that matters, without losing context.",overviewBody:"From the executive portfolio to each task, everyone works from the same source of truth.",dashboard:"Executive dashboard",dashboardBody:"Track projects, completed work, team capacity, and risk in real time.",projects:"Organized projects",projectsBody:"Keep progress, owners, products, integrations, and decisions in one place.",people:"Clear ownership",peopleBody:"Assign work by person, dates, and status — without parallel spreadsheets.",timelineTag:"The heart of TaborFlow",timelineTitle:"A Timeline that shows work as it really happens.",timelineBody:"See dependencies, overlaps, and capacity by person. Adjust timeframes, spot delays, and understand every delivery in context.",timelineCta:"Plan visually",today:"Today",todo:"To do",doing:"In progress",done:"Done",why:"From strategy to execution",whyTitle:"Fewer status meetings. More flow.",whyBody:"TaborFlow connects leadership visibility to the team's daily work, keeping every project traceable and every owner aligned.",security:"Your data belongs to your team.",securityBody:"Every organization operates in an isolated workspace. Authenticated users only access their own tenant and projects.",finalTitle:"Make work visible. Unlock the flow.",finalBody:"Create your workspace and organize your next project in minutes.",footer:"Project management with clarity and rhythm."}
 } as const;
 
+const pricingCopy = {
+  "pt-BR": {
+    nav: "Planos",
+    eyebrow: "Planos simples",
+    title: "Comece grátis. Cresça sem perder o ritmo.",
+    body: "Use os recursos essenciais sem custo e escolha o Premium quando sua equipe precisar de mais projetos, pessoas e visão consolidada.",
+    freeBody: "Para equipes pequenas organizarem o trabalho com clareza.",
+    premiumBody: "Para operações que precisam escalar projetos e decisões.",
+    monthly: "Mensal",
+    yearly: "Anual",
+    perMonth: "por mês",
+    perYear: "por ano",
+    start: "Começar grátis",
+    choose: "Quero ser Premium",
+    freeFeatures: [
+      "Até 5 usuários",
+      "Até 3 projetos ativos",
+      "Tarefas ilimitadas",
+      "Dashboard básico",
+      "Timeline de um projeto por vez"
+    ],
+    premiumFeatures: [
+      "Usuários e projetos sem limite funcional",
+      "Timeline consolidada de todos os projetos",
+      "Filtros avançados",
+      "Integrações externas por API",
+      "Exportações e relatórios avançados",
+      "Suporte prioritário"
+    ]
+  },
+  en: {
+    nav: "Pricing",
+    eyebrow: "Simple pricing",
+    title: "Start free. Grow without losing momentum.",
+    body: "Use the essentials at no cost and choose Premium when your team needs more projects, people, and consolidated visibility.",
+    freeBody: "For small teams organizing work with clarity.",
+    premiumBody: "For operations that need to scale projects and decisions.",
+    monthly: "Monthly",
+    yearly: "Yearly",
+    perMonth: "per month",
+    perYear: "per year",
+    start: "Start free",
+    choose: "Go Premium",
+    freeFeatures: [
+      "Up to 5 users",
+      "Up to 3 active projects",
+      "Unlimited tasks",
+      "Basic dashboard",
+      "One project at a time in Timeline"
+    ],
+    premiumFeatures: [
+      "No functional user or project limits",
+      "Consolidated Timeline across projects",
+      "Advanced filters",
+      "External API integrations",
+      "Exports and advanced reports",
+      "Priority support"
+    ]
+  }
+} as const;
+
 export default function Landing() {
-  const { locale, setLocale } = useI18n(); const t=copy[locale];
+  const { locale, setLocale } = useI18n(); const t=copy[locale]; const pricing=pricingCopy[locale];
   return <main className="min-h-screen overflow-hidden bg-[#f7f8f4] text-[#13243a]">
-    <nav className="sticky top-0 z-50 border-b border-[#13243a]/8 bg-[#f7f8f4]/90 backdrop-blur-xl"><div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8"><Brand/><div className="hidden items-center gap-8 text-sm font-semibold md:flex"><a href="#recursos" className="hover:text-[#e87937]">{t.navFeatures}</a><a href="#timeline" className="hover:text-[#e87937]">{t.navTimeline}</a></div><div className="flex items-center gap-2"><label className="relative hidden sm:block"><Globe2 className="pointer-events-none absolute left-3 top-2.5" size={15}/><select aria-label="Language" value={locale} onChange={e=>setLocale(e.target.value as "pt-BR"|"en")} className="rounded-full border border-[#d8ddd8] bg-white py-2 pl-9 pr-3 text-sm font-semibold"><option value="pt-BR">PT-BR</option><option value="en">EN</option></select></label><Link to="/login" className="rounded-full px-4 py-2 text-sm font-bold hover:bg-white">{t.login}</Link><Link to="/register" className="rounded-full bg-[#13243a] px-4 py-2 text-sm font-bold text-white hover:bg-[#203958]">{t.signup}</Link></div></div></nav>
+    <nav className="sticky top-0 z-50 border-b border-[#13243a]/8 bg-[#f7f8f4]/90 backdrop-blur-xl"><div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8"><Brand/><div className="hidden items-center gap-8 text-sm font-semibold md:flex"><a href="#recursos" className="hover:text-[#e87937]">{t.navFeatures}</a><a href="#timeline" className="hover:text-[#e87937]">{t.navTimeline}</a><a href="#planos" className="hover:text-[#e87937]">{pricing.nav}</a></div><div className="flex items-center gap-2"><label className="relative hidden sm:block"><Globe2 className="pointer-events-none absolute left-3 top-2.5" size={15}/><select aria-label="Language" value={locale} onChange={e=>setLocale(e.target.value as "pt-BR"|"en")} className="rounded-full border border-[#d8ddd8] bg-white py-2 pl-9 pr-3 text-sm font-semibold"><option value="pt-BR">PT-BR</option><option value="en">EN</option></select></label><Link to="/login" className="rounded-full px-4 py-2 text-sm font-bold hover:bg-white">{t.login}</Link><Link to="/register" className="rounded-full bg-[#13243a] px-4 py-2 text-sm font-bold text-white hover:bg-[#203958]">{t.signup}</Link></div></div></nav>
 
     <section className="relative mx-auto grid max-w-7xl gap-14 px-5 pb-24 pt-16 lg:grid-cols-[.9fr_1.1fr] lg:px-8 lg:pb-32 lg:pt-24"><div className="relative z-10 flex flex-col justify-center"><span className="mb-6 w-fit rounded-full border border-[#e87937]/25 bg-[#fff3ea] px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.15em] text-[#c65f24]">{t.eyebrow}</span><h1 className="max-w-2xl text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl lg:text-[4.65rem]">{t.title}</h1><p className="mt-7 max-w-xl text-lg leading-8 text-[#5b6876]">{t.body}</p><div className="mt-9 flex flex-wrap gap-3"><Link to="/register" className="flex items-center gap-2 rounded-full bg-[#e87937] px-6 py-3.5 font-extrabold text-white shadow-[0_14px_35px_rgba(232,121,55,.25)] hover:bg-[#d96b2d]">{t.cta}<ArrowRight size={18}/></Link><a href="#timeline" className="flex items-center gap-2 rounded-full border border-[#cfd6d2] bg-white px-6 py-3.5 font-extrabold hover:border-[#9ba8a1]">{t.see}<ChevronRight size={17}/></a></div><p className="mt-6 flex items-center gap-2 text-sm text-[#66736f]"><ShieldCheck size={17} className="text-[#2f7254]"/>{t.proof}</p></div><DashboardPreview/></section>
 
@@ -22,10 +88,20 @@ export default function Landing() {
 
     <section className="bg-[#eef2ed] py-24"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="max-w-4xl rounded-[2rem] bg-white p-8 shadow-sm sm:p-10"><p className="text-sm font-extrabold uppercase tracking-[.18em] text-[#e87937]">{t.why}</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.04em]">{t.whyTitle}</h2><p className="mt-5 max-w-3xl text-lg leading-8 text-[#65727f]">{t.whyBody}</p><div className="mt-8 grid gap-4 sm:grid-cols-3">{[t.dashboard,t.projects,t.people].map(x=><p key={x} className="flex items-center gap-3 font-bold"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#e7f4ec] text-[#2d7452]"><Check size={15}/></span>{x}</p>)}</div></div></div></section>
 
+    <PricingSection locale={locale} copy={pricing}/>
+
     <section className="bg-[#e87937] px-5 py-20 text-white"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 lg:flex-row lg:items-center"><div><h2 className="text-4xl font-semibold tracking-[-.04em] sm:text-5xl">{t.finalTitle}</h2><p className="mt-4 text-lg text-white/80">{t.finalBody}</p></div><Link to="/register" className="flex shrink-0 items-center gap-2 rounded-full bg-white px-7 py-4 font-extrabold text-[#13243a]">{t.signup}<ArrowRight size={18}/></Link></div></section>
     <footer className="bg-[#0d1a2a] px-5 py-10 text-white"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 sm:flex-row sm:items-center"><Brand inverse/><p className="text-sm text-white/50">{t.footer}</p></div></footer>
   </main>
 }
+
+function PricingSection({locale,copy}:{locale:"pt-BR"|"en";copy:(typeof pricingCopy)["pt-BR"]|(typeof pricingCopy)["en"]}) {
+  const [yearly,setYearly]=useState(false);
+  const premiumPrice=yearly?premiumAnnualPrice:premiumMonthlyPrice;
+  return <section id="planos" className="bg-white py-24"><div className="mx-auto max-w-6xl px-5 lg:px-8"><div className="mx-auto max-w-3xl text-center"><p className="text-sm font-extrabold uppercase tracking-[.18em] text-[#e87937]">{copy.eyebrow}</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.04em] sm:text-5xl">{copy.title}</h2><p className="mt-5 text-lg leading-8 text-[#63707d]">{copy.body}</p></div><div className="mx-auto mt-8 flex w-fit rounded-full bg-[#eef2ed] p-1"><button type="button" onClick={()=>setYearly(false)} className={`rounded-full px-5 py-2 text-sm font-bold ${!yearly?"bg-white shadow-sm":"text-[#68757f]"}`}>{copy.monthly}</button><button type="button" onClick={()=>setYearly(true)} className={`rounded-full px-5 py-2 text-sm font-bold ${yearly?"bg-white shadow-sm":"text-[#68757f]"}`}>{copy.yearly}</button></div><div className="mt-10 grid gap-6 lg:grid-cols-2"><PlanCard name="Free" description={copy.freeBody} price={locale==="pt-BR"?"Grátis":"Free"} features={copy.freeFeatures} cta={copy.start}/><PlanCard premium name="Premium" description={copy.premiumBody} price={formatPlanPrice(premiumPrice,locale)} suffix={premiumPrice!==null?(yearly?copy.perYear:copy.perMonth):undefined} features={copy.premiumFeatures} cta={copy.choose}/></div></div></section>
+}
+
+function PlanCard({name,description,price,suffix,features,cta,premium=false}:{name:string;description:string;price:string;suffix?:string;features:readonly string[];cta:string;premium?:boolean}){return <article className={`relative overflow-hidden rounded-[1.75rem] border p-7 sm:p-9 ${premium?"border-[#e87937]/35 bg-[#fff7f0]":"border-[#dce1dd] bg-[#fafbf8]"}`}>{premium&&<span className="absolute right-5 top-5 rounded-full bg-[#e87937] px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-white">Premium</span>}<h3 className="text-2xl font-extrabold">{name}</h3><p className="mt-2 min-h-12 text-[#68757f]">{description}</p><div className="mt-6"><strong className="text-3xl tracking-tight">{price}</strong>{suffix&&<span className="ml-2 text-sm text-[#68757f]">{suffix}</span>}</div><ul className="mt-7 space-y-3">{features.map(feature=><li key={feature} className="flex gap-3 text-sm font-semibold"><span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full ${premium?"bg-[#e87937] text-white":"bg-[#dceee3] text-[#26704e]"}`}><Check size={13}/></span>{feature}</li>)}</ul><Link to="/register" className={`mt-8 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 font-extrabold ${premium?"bg-[#13243a] text-white":"border border-[#cfd6d2] bg-white"}`}>{cta}<ArrowRight size={17}/></Link></article>}
 
 function Feature({icon,title,body}:{icon:ReactNode;title:string;body:string}){return <article className="rounded-[1.6rem] border border-[#dce1dd] bg-[#fafbf8] p-7"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#13243a] text-white">{icon}</span><h3 className="mt-7 text-xl font-extrabold">{title}</h3><p className="mt-3 leading-7 text-[#68757f]">{body}</p></article>}
 

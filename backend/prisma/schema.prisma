@@ -58,6 +58,7 @@ model Tenant {
   id        Int       @id @default(autoincrement())
   name      String
   slug      String    @unique
+  plan      String    @default("FREE")
   createdAt DateTime  @default(now())
   users     User[]
   projects  Project[]

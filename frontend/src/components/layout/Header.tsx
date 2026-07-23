@@ -9,6 +9,7 @@ import {
   useQuery
 } from "@apollo/client/react";
 import {
+  Building2,
   ChevronDown,
   Globe2,
   Menu
@@ -32,6 +33,10 @@ type MeQueryData = {
     name: string;
     email: string;
     role: string;
+    tenant: {
+      name: string;
+      plan: "FREE" | "PREMIUM";
+    };
   } | null;
 };
 
@@ -120,6 +125,10 @@ export default function Header({
 
     if (pathname === "/app/users") {
       return pt ? "Usuários" : "Users";
+    }
+
+    if (pathname === "/app/workspace") {
+      return "Workspace";
     }
 
     return "TaborFlow";
@@ -383,6 +392,57 @@ export default function Header({
                 {currentUser?.role ?? "USER"}
               </span>
             </div>
+
+            {currentUser?.role === "ADMIN" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsProfileOpen(false);
+                  navigate("/app/workspace");
+                }}
+                className="
+                  mt-4
+                  flex
+                  w-full
+                  items-center
+                  justify-between
+                  rounded-xl
+                  border
+                  border-slate-200
+                  bg-slate-50
+                  p-3
+                  text-left
+                  transition
+                  hover:border-slate-300
+                  hover:bg-slate-100
+                "
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-slate-700 shadow-sm">
+                    <Building2 size={18} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-slate-900">
+                      {currentUser.tenant.name}
+                    </span>
+                    <span className="block text-xs text-slate-500">
+                      Workspace
+                    </span>
+                  </span>
+                </span>
+                <span
+                  className={`ml-3 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                    currentUser.tenant.plan === "PREMIUM"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-emerald-100 text-emerald-800"
+                  }`}
+                >
+                  {currentUser.tenant.plan === "PREMIUM"
+                    ? "Premium"
+                    : "Free"}
+                </span>
+              </button>
+            )}
 
             <div className="mt-4 border-t pt-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">

@@ -9,7 +9,12 @@ export const authSchema = `#graphql
     tenant: Tenant!
   }
 
-  type Tenant { id: ID!, name: String!, slug: String! }
+  type Tenant {
+    id: ID!
+    name: String!
+    slug: String!
+    plan: String!
+  }
 
   type AuthPayload {
     token: String!

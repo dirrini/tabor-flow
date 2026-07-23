@@ -21,6 +21,7 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 - Project portfolio dashboard
 - Project, task, product, and user management
 - Administrator role with inherited project manager capabilities
+- Free and Premium workspace plans with administrator-only plan management
 - Project status and progress tracking
 - User assignment to projects and tasks
 - Estimated start and end dates for assignments
@@ -167,6 +168,8 @@ Production builds can be validated with `npm run build` inside both `frontend` a
 | --- | --- |
 | `VITE_API_URL` | Complete GraphQL endpoint exposed to the browser |
 | `VITE_GOOGLE_CLIENT_ID` | OAuth Web Client ID used by Google Identity Services |
+| `VITE_PREMIUM_MONTHLY_PRICE` | Premium monthly price in BRL; leave empty while pricing is being defined |
+| `VITE_PREMIUM_ANNUAL_PRICE` | Premium annual price in BRL; leave empty while pricing is being defined |
 
 The frontend and backend must use the same Google OAuth Web Client ID. Add both local and production frontend origins to **Google Auth Platform > Clients > Authorized JavaScript origins**.
 
@@ -228,6 +231,8 @@ Production application secrets remain in Google Cloud Secret Manager and are not
 Registration creates an organization tenant and its first administrator. The tenant identifier is stored with users and tenant-owned records and is included in signed authentication tokens. Backend resolvers scope queries and authorization checks to that tenant.
 
 Signing in with Google using an email that already exists accesses the existing user and tenant instead of creating a duplicate workspace.
+
+Each tenant starts on the `FREE` plan. The workspace creator can view plan information and the Premium upgrade preparation screen from the profile menu. Payment activation will be synchronized through the Asaas API and authenticated, idempotent webhooks in a later integration step.
 
 ## Author
 
