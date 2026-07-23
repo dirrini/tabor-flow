@@ -8,6 +8,7 @@ import type {
 } from "../../types/Project";
 import type { User }
   from "../../types/User";
+import { useI18n } from "../../lib/i18n";
 
 export type TaskAssignmentFormValues = {
   userId: string;
@@ -46,6 +47,12 @@ export default function TaskAssignmentEditor({
   projectUsers,
   onChange
 }: TaskAssignmentEditorProps) {
+  const { tr } = useI18n();
+  const roleLabel = (role: string) => role === "PROJECT_MANAGER"
+    ? tr("Gerente de projetos", "Project Manager")
+    : role === "MEMBER"
+      ? tr("Membro", "Member")
+      : formatStatus(role);
   const today = getToday();
   const [selectedUserId, setSelectedUserId] =
     useState("");
@@ -134,12 +141,12 @@ export default function TaskAssignmentEditor({
             text-slate-700
           "
         >
-          Assignees
+          {tr("Responsáveis", "Assignees")}
         </span>
 
         {projectUsers.length === 0 && (
           <p className="text-sm text-slate-500">
-            Add users to the project before assigning tasks.
+            {tr("Adicione usuários ao projeto antes de atribuir tarefas.", "Add users to the project before assigning tasks.")}
           </p>
         )}
       </div>
@@ -176,7 +183,7 @@ export default function TaskAssignmentEditor({
             "
           >
             <option value="">
-              Select user
+              {tr("Selecione um usuário", "Select user")}
             </option>
 
             {availableUsers.map((user) => (
@@ -184,7 +191,7 @@ export default function TaskAssignmentEditor({
                 key={user.id}
                 value={user.id}
               >
-                {user.name} ({formatStatus(user.role)})
+                {user.name} ({roleLabel(user.role)})
               </option>
             ))}
           </select>
@@ -248,13 +255,13 @@ export default function TaskAssignmentEditor({
             "
           >
             <option value="TODO">
-              To do
+              {tr("A fazer", "To do")}
             </option>
             <option value="IN_PROGRESS">
-              In progress
+              {tr("Em andamento", "In progress")}
             </option>
             <option value="DONE">
-              Done
+              {tr("Concluída", "Done")}
             </option>
           </select>
 
@@ -276,7 +283,7 @@ export default function TaskAssignmentEditor({
               disabled:opacity-60
             "
           >
-            Add
+          {tr("Adicionar", "Add")}
           </button>
         </div>
       )}
@@ -306,7 +313,7 @@ export default function TaskAssignmentEditor({
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {user?.name ?? "Unknown user"}
+                    {user?.name ?? tr("Usuário desconhecido", "Unknown user")}
                   </p>
                   <p className="truncate text-xs text-slate-500">
                     {user?.email}
@@ -389,13 +396,13 @@ export default function TaskAssignmentEditor({
                   "
                 >
                   <option value="TODO">
-                    To do
+                    {tr("A fazer", "To do")}
                   </option>
                   <option value="IN_PROGRESS">
-                    In progress
+                    {tr("Em andamento", "In progress")}
                   </option>
                   <option value="DONE">
-                    Done
+                    {tr("Concluída", "Done")}
                   </option>
                 </select>
 
@@ -415,7 +422,7 @@ export default function TaskAssignmentEditor({
                     hover:bg-slate-100
                   "
                 >
-                  Remove
+                  {tr("Remover", "Remove")}
                 </button>
               </div>
             );

@@ -11,6 +11,8 @@ import Users from "../pages/Users";
 import AppLayout from "../components/layout/AppLayout";
 import ProtectedRoute from "../components/layout/ProtectedRoute";
 import Landing from "../pages/Landing";
+import VerifyEmail from "../pages/VerifyEmail";
+import AcceptInvitation from "../pages/AcceptInvitation";
 
 export const router =
   createBrowserRouter([
@@ -54,5 +56,7 @@ export const router =
       path: "/login",
       element: <Login />
     },
-    { path: "/register", element: <Login mode="register" /> }
+    { path: "/register", element: <Login mode="register" /> },
+    { path: "/verify-email", element: <VerifyEmail /> },
+    { path: "/accept-invitation", element: <AcceptInvitation /> }
   ]);

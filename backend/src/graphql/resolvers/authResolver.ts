@@ -7,11 +7,18 @@ import {
 } from "../../lib/auth";
 import {
   requireAuth,
+  requireAuthenticatedUser,
   requireUserManager,
   type GraphQLContext
 } from "../context";
 import { prisma } from "../../lib/prisma";
 import { OAuth2Client } from "google-auth-library";
+import {
+  sendInvitationEmail,
+  sendVerificationEmail,
+  verifyEmailVerificationToken,
+  verifyInvitationToken
+} from "../../lib/emailVerification";
 
 const googleClient = new OAuth2Client();
 
@@ -27,28 +34,35 @@ const manageableRoles = [
 
 export const authResolver = {
   User: {
-    tenant: (user: { tenantId: number }) => prisma.tenant.findUnique({ where: { id: user.tenantId } })
+    tenant: (user: { tenantId: number }) => prisma.tenant.findUnique({ where: { id: user.tenantId } }),
+    emailVerified: (user: { emailVerifiedAt: Date | null }) => Boolean(user.emailVerifiedAt)
   },
   Query: {
     me: (
       _: unknown,
       __: unknown,
       context: GraphQLContext
-    ) => requireAuth(context),
+    ) => requireAuthenticatedUser(context),
 
     users: async (
       _: unknown,
       __: unknown,
       context: GraphQLContext
     ) => {
-      requireUserManager(context);
+      const currentUser =
+        requireUserManager(context);
 
       return prisma.user.findMany({
         where: {
-          tenantId: context.currentUser!.tenantId,
-          role: {
-            not: "ADMIN"
-          }
+          tenantId: currentUser.tenantId,
+          ...(currentUser.role === "ADMIN"
+            ? {
+                OR: [
+                  { role: { not: "ADMIN" } },
+                  { id: currentUser.id }
+                ]
+              }
+            : { role: { not: "ADMIN" } })
         },
         orderBy: {
           createdAt: "desc"
@@ -106,6 +120,11 @@ export const authResolver = {
         const tenant = await tx.tenant.create({ data: { name: args.organizationName.trim(), slug: tenantSlug(args.organizationName) } });
         return tx.user.create({ data: { name: args.name.trim(), email, passwordHash: hashPassword(args.password), role: "ADMIN", tenantId: tenant.id }, include: { tenant: true } });
       });
+      try {
+        await sendVerificationEmail(user);
+      } catch (error) {
+        console.error("Unable to send registration verification email.", error);
+      }
       return { token: createAuthToken({ userId: user.id, role: user.role, tenantId: user.tenantId }), user };
     },
     loginWithGoogle: async (_: unknown, args: { credential: string }) => {
@@ -120,12 +139,41 @@ export const authResolver = {
         user = await prisma.$transaction(async (tx) => {
           const name = payload.name || email.split("@")[0];
           const tenant = await tx.tenant.create({ data: { name: `${name}'s workspace`, slug: tenantSlug(name) } });
-          return tx.user.create({ data: { name, email, googleSubject: payload.sub, role: "ADMIN", tenantId: tenant.id }, include: { tenant: true } });
+          return tx.user.create({ data: { name, email, googleSubject: payload.sub, emailVerifiedAt: new Date(), role: "ADMIN", tenantId: tenant.id }, include: { tenant: true } });
         });
-      } else if (!user.googleSubject) {
-        user = await prisma.user.update({ where: { id: user.id }, data: { googleSubject: payload.sub }, include: { tenant: true } });
+      } else if (!user.googleSubject || !user.emailVerifiedAt) {
+        user = await prisma.user.update({ where: { id: user.id }, data: { googleSubject: payload.sub, emailVerifiedAt: user.emailVerifiedAt ?? new Date() }, include: { tenant: true } });
       }
       return { token: createAuthToken({ userId: user.id, role: user.role, tenantId: user.tenantId }), user };
+    },
+    verifyEmail: async (_: unknown, args: { token: string }) => {
+      const payload = verifyEmailVerificationToken(args.token);
+      if (!payload) throw new GraphQLError("Verification link is invalid or expired.", { extensions: { code: "BAD_USER_INPUT" } });
+      const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+      if (!user || user.email !== payload.email) throw new GraphQLError("Verification link is invalid or expired.", { extensions: { code: "BAD_USER_INPUT" } });
+      if (!user.emailVerifiedAt) await prisma.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } });
+      return true;
+    },
+    resendVerificationEmail: async (_: unknown, __: unknown, context: GraphQLContext) => {
+      const user = requireAuthenticatedUser(context);
+      if (user.emailVerifiedAt) return true;
+      await sendVerificationEmail(user);
+      return true;
+    },
+    acceptInvitation: async (_: unknown, args: { token: string; password: string }) => {
+      if (args.password.length < 8) throw new GraphQLError("Password must be at least 8 characters.", { extensions: { code: "BAD_USER_INPUT" } });
+      const payload = verifyInvitationToken(args.token);
+      if (!payload) throw new GraphQLError("Invitation link is invalid or expired.", { extensions: { code: "BAD_USER_INPUT" } });
+      const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+      if (!user || user.email !== payload.email || user.passwordHash) throw new GraphQLError("Invitation link is invalid, expired, or already used.", { extensions: { code: "BAD_USER_INPUT" } });
+      const acceptedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: hashPassword(args.password), emailVerifiedAt: user.emailVerifiedAt ?? new Date() }
+      });
+      return {
+        token: createAuthToken({ userId: acceptedUser.id, role: acceptedUser.role, tenantId: acceptedUser.tenantId }),
+        user: acceptedUser
+      };
     },
     createUser: async (
       _: unknown,
@@ -133,13 +181,13 @@ export const authResolver = {
         input: {
           name: string;
           email: string;
-          password: string;
           role: string;
         };
       },
       context: GraphQLContext
     ) => {
-      requireUserManager(context);
+      const currentUser =
+        requireUserManager(context);
 
       const email =
         args.input.email
@@ -160,10 +208,7 @@ export const authResolver = {
         );
       }
 
-      const existingUser =
-        await prisma.user.findFirst({
-          where: { email, tenantId: context.currentUser!.tenantId }
-        });
+      const existingUser = await prisma.user.findFirst({ where: { email } });
 
       if (existingUser) {
         throw new GraphQLError(
@@ -176,17 +221,23 @@ export const authResolver = {
         );
       }
 
-      return prisma.user.create({
+      const createdUser = await prisma.user.create({
         data: {
           name: args.input.name.trim(),
           email,
-          passwordHash: hashPassword(
-            args.input.password
-          ),
-          role
-          ,tenantId: context.currentUser!.tenantId
-        }
+          role,
+          tenantId: currentUser.tenantId
+        },
+        include: { tenant: true }
       });
+      try {
+        await sendInvitationEmail(createdUser, createdUser.tenant.name);
+      } catch (error) {
+        await prisma.user.delete({ where: { id: createdUser.id } });
+        console.error("Unable to send user invitation email.", error);
+        throw new GraphQLError("Could not send the invitation email.", { extensions: { code: "SERVICE_UNAVAILABLE" } });
+      }
+      return createdUser;
     },
     updateUser: async (
       _: unknown,
@@ -200,16 +251,26 @@ export const authResolver = {
       },
       context: GraphQLContext
     ) => {
-      requireUserManager(context);
+      const currentUser =
+        requireUserManager(context);
 
       const user =
         await prisma.user.findFirst({
           where: {
-            id: Number(args.id), tenantId: context.currentUser!.tenantId
+            id: Number(args.id),
+            tenantId: currentUser.tenantId
           }
         });
 
-      if (!user || user.role === "ADMIN") {
+      const canEditAdmin =
+        user?.role === "ADMIN" &&
+        currentUser.role === "ADMIN" &&
+        user.id === currentUser.id;
+
+      if (
+        !user ||
+        (user.role === "ADMIN" && !canEditAdmin)
+      ) {
         throw new GraphQLError(
           "User not found.",
           {
@@ -222,8 +283,12 @@ export const authResolver = {
 
       if (
         args.input.role &&
-        !manageableRoles.includes(
-          args.input.role
+        (
+          user.role === "ADMIN"
+            ? args.input.role !== "ADMIN"
+            : !manageableRoles.includes(
+                args.input.role
+              )
         )
       ) {
         throw new GraphQLError(
@@ -245,7 +310,8 @@ export const authResolver = {
         const existingUser =
           await prisma.user.findFirst({
             where: {
-              email, tenantId: context.currentUser!.tenantId
+              email,
+              id: { not: user.id }
             }
           });
 
@@ -261,7 +327,7 @@ export const authResolver = {
         }
       }
 
-      return prisma.user.update({
+      const updatedUser = await prisma.user.update({
         where: {
           id: Number(args.id)
         },
@@ -273,13 +339,26 @@ export const authResolver = {
               }
             : {}),
           ...(email
-            ? { email }
+            ? {
+                email,
+                ...(email !== user.email
+                  ? { emailVerifiedAt: null }
+                  : {})
+              }
             : {}),
           ...(args.input.role
             ? { role: args.input.role }
             : {})
         }
       });
+      if (email && email !== user.email) {
+        try {
+          await sendVerificationEmail(updatedUser);
+        } catch (error) {
+          console.error("Unable to send updated email verification.", error);
+        }
+      }
+      return updatedUser;
     },
     updateMyPassword: async (
       _: unknown,

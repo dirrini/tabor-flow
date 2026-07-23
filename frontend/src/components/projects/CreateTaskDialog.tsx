@@ -10,6 +10,7 @@ import type { User }
 import TaskAssignmentEditor, {
   type TaskAssignmentFormValues
 } from "./TaskAssignmentEditor";
+import { useI18n } from "../../lib/i18n";
 
 export type CreateTaskFormValues = {
   title: string;
@@ -42,6 +43,7 @@ export default function CreateTaskDialog({
   onClose,
   onCreate
 }: CreateTaskDialogProps) {
+  const { tr } = useI18n();
   const [taskForm, setTaskForm] =
     useState<CreateTaskFormValues>(
       initialTaskForm
@@ -94,7 +96,7 @@ export default function CreateTaskDialog({
           "
         >
           <h3 className="text-xl font-semibold">
-            New task
+            {tr("Nova tarefa", "New task")}
           </h3>
 
           <button
@@ -109,7 +111,7 @@ export default function CreateTaskDialog({
               hover:bg-slate-100
             "
           >
-            Close
+            {tr("Fechar", "Close")}
           </button>
         </div>
 
@@ -127,7 +129,7 @@ export default function CreateTaskDialog({
                 text-slate-700
               "
             >
-              Title
+              {tr("Título", "Title")}
             </span>
             <input
               required
@@ -161,7 +163,7 @@ export default function CreateTaskDialog({
                 text-slate-700
               "
             >
-              Description
+              {tr("Descrição", "Description")}
             </span>
             <textarea
               value={taskForm.description}
@@ -197,7 +199,7 @@ export default function CreateTaskDialog({
                 text-slate-700
               "
             >
-              Status
+              {tr("Status", "Status")}
             </span>
             <select
               value={taskForm.status}
@@ -220,13 +222,13 @@ export default function CreateTaskDialog({
               "
             >
               <option value="TODO">
-                To do
+                {tr("A fazer", "To do")}
               </option>
               <option value="IN_PROGRESS">
-                In progress
+                {tr("Em andamento", "In progress")}
               </option>
               <option value="DONE">
-                Done
+                {tr("Concluída", "Done")}
               </option>
             </select>
           </label>
@@ -268,7 +270,7 @@ export default function CreateTaskDialog({
                 hover:bg-slate-100
               "
             >
-              Cancel
+              {tr("Cancelar", "Cancel")}
             </button>
 
             <button
@@ -300,8 +302,8 @@ export default function CreateTaskDialog({
               "
             >
               {creating
-                ? "Creating..."
-                : "Create task"}
+                ? tr("Criando...", "Creating...")
+                : tr("Criar tarefa", "Create task")}
             </button>
           </div>
         </form>

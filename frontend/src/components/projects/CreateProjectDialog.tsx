@@ -5,6 +5,7 @@ import {
 
 import type { ProjectStatus }
   from "../../types/Project";
+import { useI18n } from "../../lib/i18n";
 
 export type CreateProjectFormValues = {
   externalCode?: string | null;
@@ -37,6 +38,7 @@ export default function CreateProjectDialog({
   onClose,
   onCreate
 }: CreateProjectDialogProps) {
+  const { tr } = useI18n();
   const [projectForm, setProjectForm] =
     useState<CreateProjectFormValues>(
       initialProjectForm
@@ -102,7 +104,7 @@ export default function CreateProjectDialog({
               font-semibold
             "
           >
-            New project
+            {tr("Novo projeto", "New project")}
           </h3>
 
           <button
@@ -117,7 +119,7 @@ export default function CreateProjectDialog({
               hover:bg-slate-100
             "
           >
-            Close
+            {tr("Fechar", "Close")}
           </button>
         </div>
 
@@ -135,7 +137,7 @@ export default function CreateProjectDialog({
                 text-slate-700
               "
             >
-              Name
+              {tr("Nome", "Name")}
             </span>
             <input
               required
@@ -169,7 +171,7 @@ export default function CreateProjectDialog({
                 text-slate-700
               "
             >
-              External project code
+              {tr("Código externo do projeto", "External project code")}
             </span>
             <input
               value={
@@ -205,7 +207,7 @@ export default function CreateProjectDialog({
                 text-slate-700
               "
             >
-              Description
+              {tr("Descrição", "Description")}
             </span>
             <textarea
               required
@@ -250,7 +252,7 @@ export default function CreateProjectDialog({
                   text-slate-700
                 "
               >
-                Status
+                {tr("Status", "Status")}
               </span>
               <select
                 value={projectForm.status}
@@ -274,13 +276,13 @@ export default function CreateProjectDialog({
                 "
               >
                 <option value="ON_TRACK">
-                  On Track
+                  {tr("No prazo", "On Track")}
                 </option>
                 <option value="AT_RISK">
-                  At Risk
+                  {tr("Em risco", "At Risk")}
                 </option>
                 <option value="COMPLETED">
-                  Completed
+                  {tr("Concluído", "Completed")}
                 </option>
               </select>
             </label>
@@ -295,7 +297,7 @@ export default function CreateProjectDialog({
                   text-slate-700
                 "
               >
-                Progress
+                {tr("Progresso", "Progress")}
               </span>
               <input
                 required
@@ -352,7 +354,7 @@ export default function CreateProjectDialog({
                 hover:bg-slate-100
               "
             >
-              Cancel
+              {tr("Cancelar", "Cancel")}
             </button>
 
             <button
@@ -377,8 +379,8 @@ export default function CreateProjectDialog({
               "
             >
               {creating
-                ? "Creating..."
-                : "Create project"}
+                ? tr("Criando...", "Creating...")
+                : tr("Criar projeto", "Create project")}
             </button>
           </div>
         </form>

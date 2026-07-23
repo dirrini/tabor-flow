@@ -11,6 +11,8 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 - Responsive landing page in Portuguese (Brazil) and English
 - TaborFlow SVG brand assets and favicon
 - Email and password registration and login
+- Email verification through Resend before workspace access
+- Email invitations for workspace members with password setup on acceptance
 - Sign in with Google through Google Identity Services
 - Automatic access to the protected workspace after authentication
 
@@ -18,6 +20,7 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 
 - Project portfolio dashboard
 - Project, task, product, and user management
+- Administrator role with inherited project manager capabilities
 - Project status and progress tracking
 - User assignment to projects and tasks
 - Estimated start and end dates for assignments
@@ -151,6 +154,9 @@ Production builds can be validated with `npm run build` inside both `frontend` a
 | `AUTH_SECRET` | Secret used to sign authentication tokens |
 | `GOOGLE_CLIENT_ID` | OAuth Web Client ID used to verify Google ID tokens |
 | `CORS_ORIGIN` | Browser origin allowed to call the API |
+| `APP_URL` | Public frontend URL used to generate email verification links |
+| `RESEND_API_KEY` | Resend API key used for transactional email |
+| `RESEND_FROM_EMAIL` | Sender name and address on a domain verified by Resend |
 | `SEED_INTEGRATION_CLIENT_ID` | Optional external integration client identifier |
 | `SEED_INTEGRATION_CLIENT_SECRET` | Optional external integration secret |
 | `SEED_INTEGRATION_SCOPES` | Optional integration scopes |
@@ -163,6 +169,14 @@ Production builds can be validated with `npm run build` inside both `frontend` a
 | `VITE_GOOGLE_CLIENT_ID` | OAuth Web Client ID used by Google Identity Services |
 
 The frontend and backend must use the same Google OAuth Web Client ID. Add both local and production frontend origins to **Google Auth Platform > Clients > Authorized JavaScript origins**.
+
+### Email verification
+
+Email/password accounts receive a signed verification link that expires after 60 minutes. Until the address is confirmed, the authenticated user can only access the verification screen or request a new email. Accounts authenticated through Google are considered verified by the identity provider.
+
+Users added by a workspace administrator do not receive a temporary password. They receive a signed invitation link that expires after seven days, confirm the invitation, and define their own password before accessing the workspace. If an invited email later authenticates with Google, the Google identity is linked to that existing account and tenant.
+
+`RESEND_FROM_EMAIL` must use a sender address on a domain verified in Resend. In production, keep `RESEND_API_KEY` in Google Cloud Secret Manager and set `APP_URL=https://tabor-flow.dirrini.tech` on the Cloud Run service.
 
 ## Database migrations
 

@@ -4,6 +4,7 @@ import StatusBadge from "./StatusBadge";
 
 import type { ProjectStatus }
   from "../../types/Project";
+import { useI18n } from "../../lib/i18n";
 
 interface ProjectCardProps {
   id: string;
@@ -20,6 +21,7 @@ export default function ProjectCard({
   progress,
   status
 }: ProjectCardProps) {
+  const { tr } = useI18n();
   return (
     <Link
       to={`/app/projects/${id}`}
@@ -73,7 +75,7 @@ export default function ProjectCard({
             mb-2
           "
         >
-          <span>Progress</span>
+          <span>{tr("Progresso", "Progress")}</span>
           <span>{progress}%</span>
         </div>
 

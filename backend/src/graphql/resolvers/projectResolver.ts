@@ -762,7 +762,8 @@ export const projectResolver = {
         !user ||
         (
           user.role !== "PROJECT_MANAGER" &&
-          user.role !== "MEMBER"
+          user.role !== "MEMBER" &&
+          user.role !== "ADMIN"
         )
       ) {
         throw new GraphQLError(

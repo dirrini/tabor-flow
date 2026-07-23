@@ -5,6 +5,7 @@ import { Brand } from "../Brand";
 
 import { ME_QUERY }
   from "../../graphql/queries/auth";
+import { useI18n } from "../../lib/i18n";
 
 type MeQueryData = {
   me: {
@@ -21,6 +22,7 @@ export default function Sidebar({
   isOpen,
   onClose
 }: SidebarProps) {
+  const { tr } = useI18n();
   const { data } =
     useQuery<MeQueryData>(ME_QUERY);
   const canManageUsers =
@@ -33,7 +35,7 @@ export default function Sidebar({
       {isOpen && (
         <button
           type="button"
-          aria-label="Close navigation"
+          aria-label={tr("Fechar navegação", "Close navigation")}
           onClick={onClose}
           className="
             fixed
@@ -95,7 +97,7 @@ export default function Sidebar({
             hover:bg-slate-800
             lg:hidden
           "
-          aria-label="Close navigation"
+          aria-label={tr("Fechar navegação", "Close navigation")}
         >
           <X size={18} />
         </button>
@@ -120,7 +122,7 @@ export default function Sidebar({
                 hover:bg-slate-800
               "
             >
-              Dashboard
+              {tr("Painel", "Dashboard")}
             </Link>
           </li>
 
@@ -136,7 +138,7 @@ export default function Sidebar({
                 hover:bg-slate-800
               "
             >
-              Projects
+              {tr("Projetos", "Projects")}
             </Link>
           </li>
 
@@ -153,7 +155,7 @@ export default function Sidebar({
                   hover:bg-slate-800
                 "
               >
-                Timeline
+                {tr("Cronograma", "Timeline")}
               </Link>
             </li>
           )}
@@ -171,7 +173,7 @@ export default function Sidebar({
                   hover:bg-slate-800
                 "
               >
-                Users
+                {tr("Usuários", "Users")}
               </Link>
             </li>
           )}

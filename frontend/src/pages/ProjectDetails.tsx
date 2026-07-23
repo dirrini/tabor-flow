@@ -49,6 +49,7 @@ import type {
   Task,
   TaskStatus
 } from "../types/Project";
+import { useI18n } from "../lib/i18n";
 import type { User }
   from "../types/User";
 
@@ -107,6 +108,18 @@ function taskStatusClasses(
 }
 
 export default function ProjectDetails() {
+  const { tr } = useI18n();
+  const statusLabel = (status: string) => ({
+    ON_TRACK: tr("No prazo", "On Track"),
+    AT_RISK: tr("Em risco", "At Risk"),
+    COMPLETED: tr("Concluído", "Completed"),
+    TODO: tr("A fazer", "To do"),
+    IN_PROGRESS: tr("Em andamento", "In progress"),
+    DONE: tr("Concluída", "Done"),
+    PROJECT_MANAGER: tr("Gerente de projetos", "Project Manager"),
+    MEMBER: tr("Membro", "Member"),
+    ADMIN: tr("Administrador", "Administrator")
+  }[status] ?? formatStatus(status));
   const navigate = useNavigate();
   const {
     id,
@@ -499,7 +512,7 @@ export default function ProjectDetails() {
   };
 
   if (loading && !data?.project) {
-    return <p>Loading project...</p>;
+    return <p>{tr("Carregando projeto...", "Loading project...")}</p>;
   }
 
   if (error || !data?.project) {
@@ -515,7 +528,7 @@ export default function ProjectDetails() {
             hover:text-slate-900
           "
         >
-          Back to projects
+          {tr("Voltar aos projetos", "Back to projects")}
         </Link>
 
         <div
@@ -527,7 +540,7 @@ export default function ProjectDetails() {
             text-center
           "
         >
-          Project not found.
+          {tr("Projeto não encontrado.", "Project not found.")}
         </div>
       </div>
     );
@@ -545,7 +558,8 @@ export default function ProjectDetails() {
   const projectManagers =
     projectUsers.filter(
       (user) =>
-        user.role === "PROJECT_MANAGER"
+        user.role === "PROJECT_MANAGER" ||
+        user.role === "ADMIN"
     );
   const members = projectUsers.filter(
     (user) => user.role === "MEMBER"
@@ -571,7 +585,7 @@ export default function ProjectDetails() {
           hover:text-slate-900
         "
       >
-        Back to projects
+        {tr("Voltar aos projetos", "Back to projects")}
       </Link>
 
       <div
@@ -632,7 +646,7 @@ export default function ProjectDetails() {
               hover:bg-slate-700
             "
           >
-            New task
+                  {tr("Nova tarefa", "New task")}
           </button>
         )}
 
@@ -655,7 +669,7 @@ export default function ProjectDetails() {
               hover:bg-slate-700
             "
           >
-            New product
+                  {tr("Novo produto", "New product")}
           </button>
         )}
       </div>
@@ -686,7 +700,7 @@ export default function ProjectDetails() {
             }
           `}
         >
-          Overview
+              {tr("Visão geral", "Overview")}
         </Link>
 
         {canManageCurrentProject && (
@@ -707,7 +721,7 @@ export default function ProjectDetails() {
                 }
               `}
             >
-              Users
+              {tr("Usuários", "Users")}
             </Link>
 
             <Link
@@ -726,7 +740,7 @@ export default function ProjectDetails() {
                 }
               `}
             >
-              Tasks
+              {tr("Tarefas", "Tasks")}
             </Link>
 
             <Link
@@ -745,7 +759,7 @@ export default function ProjectDetails() {
                 }
               `}
             >
-              Products
+              {tr("Produtos", "Products")}
             </Link>
           </>
         )}
@@ -781,7 +795,7 @@ export default function ProjectDetails() {
                   font-semibold
                 "
               >
-                Project information
+                  {tr("Informações do projeto", "Project information")}
               </h3>
 
               {canManageCurrentProject && (
@@ -819,7 +833,7 @@ export default function ProjectDetails() {
                   text-red-600
                 "
               >
-                Could not delete project.
+              {tr("Não foi possível excluir o projeto.", "Could not delete project.")}
               </p>
             )}
 
@@ -834,7 +848,7 @@ export default function ProjectDetails() {
             >
               <div>
                 <p className="text-sm text-slate-500">
-                  External code
+                  {tr("Código externo", "External code")}
                 </p>
                 <p className="font-medium">
                   {project.externalCode ??
@@ -844,16 +858,16 @@ export default function ProjectDetails() {
 
               <div>
                 <p className="text-sm text-slate-500">
-                  Status
+                  {tr("Status", "Status")}
                 </p>
                 <p className="font-medium">
-                  {formatStatus(project.status)}
+                  {statusLabel(project.status)}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-slate-500">
-                  Progress
+                  {tr("Progresso", "Progress")}
                 </p>
                 <p className="font-medium">
                   {project.progress}%
@@ -862,7 +876,7 @@ export default function ProjectDetails() {
 
               <div>
                 <p className="text-sm text-slate-500">
-                  Assigned users
+                  {tr("Usuários atribuídos", "Assigned users")}
                 </p>
                 <p className="font-medium">
                   {projectUsers.length}
@@ -891,7 +905,7 @@ export default function ProjectDetails() {
               font-semibold
             "
           >
-            Edit project
+                {tr("Editar projeto", "Edit project")}
           </h3>
 
           <div className="space-y-4">
@@ -905,7 +919,7 @@ export default function ProjectDetails() {
                   text-slate-700
                 "
               >
-                Name
+                  {tr("Nome", "Name")}
               </span>
               <input
                 required
@@ -939,7 +953,7 @@ export default function ProjectDetails() {
                   text-slate-700
                 "
               >
-                External project code
+                  {tr("Código externo do projeto", "External project code")}
               </span>
               <input
                 value={
@@ -975,7 +989,7 @@ export default function ProjectDetails() {
                   text-slate-700
                 "
               >
-                Description
+                  {tr("Descrição", "Description")}
               </span>
               <textarea
                 required
@@ -1022,7 +1036,7 @@ export default function ProjectDetails() {
                     text-slate-700
                   "
                 >
-                  Status
+                    {tr("Status", "Status")}
                 </span>
                 <select
                   value={projectForm.status}
@@ -1046,13 +1060,13 @@ export default function ProjectDetails() {
                   "
                 >
                   <option value="ON_TRACK">
-                    On Track
+                    {tr("No prazo", "On Track")}
                   </option>
                   <option value="AT_RISK">
-                    At Risk
+                    {tr("Em risco", "At Risk")}
                   </option>
                   <option value="COMPLETED">
-                    Completed
+                    {tr("Concluído", "Completed")}
                   </option>
                 </select>
               </label>
@@ -1067,7 +1081,7 @@ export default function ProjectDetails() {
                     text-slate-700
                   "
                 >
-                  Progress
+                    {tr("Progresso", "Progress")}
                 </span>
                 <input
                   required
@@ -1107,7 +1121,7 @@ export default function ProjectDetails() {
                 text-red-600
               "
             >
-              Could not update project.
+                {tr("Não foi possível atualizar o projeto.", "Could not update project.")}
             </p>
           )}
 
@@ -1171,7 +1185,7 @@ export default function ProjectDetails() {
                   font-semibold
                 "
               >
-                Project users
+                {tr("Usuários do projeto", "Project users")}
               </h3>
 
               {canManageCurrentProject && (
@@ -1202,7 +1216,7 @@ export default function ProjectDetails() {
                     "
                   >
                     <option value="">
-                      Select user
+                    {tr("Selecione um usuário", "Select user")}
                     </option>
 
                     {assignableUsers.map(
@@ -1211,7 +1225,7 @@ export default function ProjectDetails() {
                           key={user.id}
                           value={user.id}
                         >
-                          {user.name} ({formatStatus(user.role)})
+                          {user.name} ({statusLabel(user.role)})
                         </option>
                       )
                     )}
@@ -1249,7 +1263,7 @@ export default function ProjectDetails() {
             {(addUserError ||
               removeUserError) && (
               <p className="mb-4 text-sm text-red-600">
-                Could not update project users.
+                {tr("Não foi possível atualizar os usuários do projeto.", "Could not update project users.")}
               </p>
             )}
 
@@ -1270,12 +1284,12 @@ export default function ProjectDetails() {
                     text-slate-700
                   "
                 >
-                  Project Managers
+                    {tr("Gerentes de projetos", "Project Managers")}
                 </h4>
 
                 {projectManagers.length === 0 ? (
                   <p className="text-sm text-slate-500">
-                    No project managers assigned.
+                    {tr("Nenhum gerente de projetos atribuído.", "No project managers assigned.")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -1322,7 +1336,7 @@ export default function ProjectDetails() {
                                 disabled:opacity-60
                               "
                             >
-                              Remove
+                          {tr("Remover", "Remove")}
                             </button>
                           )}
                         </div>
@@ -1341,12 +1355,12 @@ export default function ProjectDetails() {
                     text-slate-700
                   "
                 >
-                  Members
+                    {tr("Membros", "Members")}
                 </h4>
 
                 {members.length === 0 ? (
                   <p className="text-sm text-slate-500">
-                    No members assigned.
+                    {tr("Nenhum membro atribuído.", "No members assigned.")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -1392,7 +1406,7 @@ export default function ProjectDetails() {
                               disabled:opacity-60
                             "
                           >
-                            Remove
+                          {tr("Remover", "Remove")}
                           </button>
                         )}
                       </div>
@@ -1422,7 +1436,7 @@ export default function ProjectDetails() {
                 font-semibold
               "
             >
-              Tasks
+                {tr("Tarefas", "Tasks")}
             </h3>
 
             <span
@@ -1446,7 +1460,7 @@ export default function ProjectDetails() {
                 text-slate-500
               "
             >
-              No tasks yet.
+                    {tr("Ainda não há tarefas.", "No tasks yet.")}
             </div>
           ) : (
             <div className="space-y-3">
@@ -1499,7 +1513,7 @@ export default function ProjectDetails() {
                           )}
                         `}
                       >
-                        {formatStatus(task.status)}
+                        {statusLabel(task.status)}
                       </span>
 
                       {canManageCurrentProject && (
@@ -1517,7 +1531,7 @@ export default function ProjectDetails() {
                             hover:bg-slate-100
                           "
                         >
-                          Edit
+                          {tr("Editar", "Edit")}
                         </button>
                       )}
                     </div>
@@ -1579,7 +1593,7 @@ export default function ProjectDetails() {
                                 )}
                               `}
                             >
-                              {formatStatus(
+                              {statusLabel(
                                 taskUser.status
                               )}
                             </span>
@@ -1617,7 +1631,7 @@ export default function ProjectDetails() {
             "
           >
             <h3 className="text-lg font-semibold">
-              Products
+                {tr("Produtos", "Products")}
             </h3>
 
             <span className="text-sm text-slate-500">
@@ -1627,7 +1641,7 @@ export default function ProjectDetails() {
 
           {deleteProductError && (
             <p className="mb-4 text-sm text-red-600">
-              Could not delete product.
+              {tr("Não foi possível excluir o produto.", "Could not delete product.")}
             </p>
           )}
 
@@ -1642,7 +1656,7 @@ export default function ProjectDetails() {
                 text-slate-500
               "
             >
-              No products yet.
+                    {tr("Ainda não há produtos.", "No products yet.")}
             </div>
           ) : (
             <div className="space-y-3">
@@ -1723,7 +1737,7 @@ export default function ProjectDetails() {
                           hover:bg-slate-100
                         "
                       >
-                        Edit
+                          {tr("Editar", "Edit")}
                       </button>
 
                       <button
@@ -1746,7 +1760,7 @@ export default function ProjectDetails() {
                           disabled:opacity-60
                         "
                       >
-                        Delete
+                          {tr("Excluir", "Delete")}
                       </button>
                     </div>
                   </div>
@@ -1773,7 +1787,7 @@ export default function ProjectDetails() {
 
                     <div>
                       <p className="text-xs text-slate-500">
-                        Vendor
+                        {tr("Fornecedor", "Vendor")}
                       </p>
                       <p className="font-medium">
                         {product.vendor}
@@ -1782,7 +1796,7 @@ export default function ProjectDetails() {
 
                     <div>
                       <p className="text-xs text-slate-500">
-                        Quantity
+                        {tr("Quantidade", "Quantity")}
                       </p>
                       <p className="font-medium">
                         {product.quantity}
@@ -1791,7 +1805,7 @@ export default function ProjectDetails() {
 
                     <div>
                       <p className="text-xs text-slate-500">
-                        Delivery date
+                        {tr("Data de entrega", "Delivery date")}
                       </p>
                       <p className="font-medium">
                         {product.deliveryDate}
@@ -1817,7 +1831,7 @@ export default function ProjectDetails() {
               text-slate-500
             "
           >
-            This section is only available to project managers of this project.
+              {tr("Esta seção está disponível apenas para gerentes deste projeto.", "This section is only available to project managers of this project.")}
           </div>
         )}
       </div>

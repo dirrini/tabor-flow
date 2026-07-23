@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: projectpulse-api
-  namespace: projectpulse
+  name: tabor-flow-api
+  namespace: tabor-flow
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: projectpulse-api
+      app: tabor-flow-api
   template:
     metadata:
       labels:
-        app: projectpulse-api
+        app: tabor-flow-api
     spec:
       containers:
         - name: api
-          image: projectpulse-api:latest
+          image: tabor-flow-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 4000
           envFrom:
             - configMapRef:
-                name: projectpulse-config
+                name: tabor-flow-config
             - secretRef:
-                name: projectpulse-secrets
+                name: tabor-flow-secrets
           readinessProbe:
             httpGet:
               path: /health

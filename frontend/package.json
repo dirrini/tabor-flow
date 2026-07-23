@@ -1,5 +1,5 @@
 {
-  "name": "projectpulse-web",
+  "name": "tabor-flow-web",
   "private": true,
   "scripts": {
     "dev": "vite --host",

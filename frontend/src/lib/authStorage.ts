@@ -1,5 +1,5 @@
 const authTokenKey =
-  "projectpulse.authToken";
+  "tabor-flow.authToken";
 
 export function getAuthToken() {
   return localStorage.getItem(
