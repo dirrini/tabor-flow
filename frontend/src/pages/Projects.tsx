@@ -20,6 +20,7 @@ import {
 } from "../graphql/queries/projects";
 import { ME_QUERY }
   from "../graphql/queries/auth";
+import { useI18n } from "../lib/i18n";
 
 type MeQueryData = {
   me: {
@@ -28,6 +29,7 @@ type MeQueryData = {
 };
 
 export default function Projects() {
+  const { tr } = useI18n();
   const { data, loading } = useProjects();
   const { data: meData } =
     useQuery<MeQueryData>(ME_QUERY);
@@ -128,7 +130,7 @@ export default function Projects() {
           >
             {filteredProjects.length}
             {" "}
-            projects
+            {tr("projetos", "projects")}
           </span>
 
           {canManageProjects && (
@@ -149,7 +151,7 @@ export default function Projects() {
                 hover:bg-slate-700
               "
             >
-              New project
+              {tr("Novo projeto", "New project")}
             </button>
           )}
         </div>
@@ -157,7 +159,7 @@ export default function Projects() {
 
       <div className="mb-4">
         <p className="text-slate-500">
-          Manage and monitor all active projects.
+          {tr("Gerencie e acompanhe todos os projetos ativos.", "Manage and monitor all active projects.")}
         </p>
       </div>
 
@@ -208,19 +210,18 @@ export default function Projects() {
               }
             `}
           >
-            {status
-              .replace("_", " ")
-              .toLowerCase()
-              .replace(
-                /\b\w/g,
-                (c) => c.toUpperCase()
-              )}
+            {{
+              ALL: tr("Todos", "All"),
+              ON_TRACK: tr("No prazo", "On Track"),
+              AT_RISK: tr("Em risco", "At Risk"),
+              COMPLETED: tr("Concluídos", "Completed")
+            }[status]}
           </button>
         ))}
       </div>
 
       {loading && (
-        <p>Loading projects...</p>
+        <p>{tr("Carregando projetos...", "Loading projects...")}</p>
       )}
 
       {!loading &&
@@ -234,7 +235,7 @@ export default function Projects() {
               text-center
             "
           >
-            No projects found.
+            {tr("Nenhum projeto encontrado.", "No projects found.")}
           </div>
         )}
 
@@ -272,7 +273,7 @@ export default function Projects() {
           creating={creating}
           errorMessage={
             createError
-              ? "Could not create project."
+              ? tr("Não foi possível criar o projeto.", "Could not create project.")
               : undefined
           }
           onClose={closeCreateDialog}

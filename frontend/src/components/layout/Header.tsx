@@ -10,6 +10,7 @@ import {
 } from "@apollo/client/react";
 import {
   ChevronDown,
+  Globe2,
   Menu
 } from "lucide-react";
 import {
@@ -23,6 +24,8 @@ import {
 } from "../../graphql/queries/auth";
 import { clearAuthToken }
   from "../../lib/authStorage";
+import { useI18n }
+  from "../../lib/i18n";
 
 type MeQueryData = {
   me: {
@@ -42,6 +45,8 @@ export default function Header({
   const navigate = useNavigate();
   const location = useLocation();
   const apolloClient = useApolloClient();
+  const { locale, setLocale } = useI18n();
+  const pt = locale === "pt-BR";
   const [
     isProfileOpen,
     setIsProfileOpen
@@ -96,29 +101,29 @@ export default function Header({
       location.pathname;
 
     if (pathname === "/app") {
-      return "Dashboard";
+      return pt ? "Painel" : "Dashboard";
     }
 
     if (pathname === "/app/projects") {
-      return "Projects";
+      return pt ? "Projetos" : "Projects";
     }
 
     if (
       pathname.startsWith("/app/projects/")
     ) {
-      return "Project details";
+      return pt ? "Detalhes do projeto" : "Project details";
     }
 
     if (pathname === "/app/timeline") {
-      return "Timeline";
+      return pt ? "Cronograma" : "Timeline";
     }
 
     if (pathname === "/app/users") {
-      return "Users";
+      return pt ? "Usuários" : "Users";
     }
 
     return "TaborFlow";
-  }, [location.pathname]);
+  }, [location.pathname, pt]);
 
   const handleLogout = async () => {
     clearAuthToken();
@@ -149,7 +154,7 @@ export default function Header({
 
     if (newPassword !== confirmPassword) {
       setPasswordMessage(
-        "New passwords do not match."
+        pt ? "As novas senhas não coincidem." : "New passwords do not match."
       );
       return;
     }
@@ -170,7 +175,7 @@ export default function Header({
     resetPasswordForm();
     setIsPasswordOpen(false);
     setPasswordMessage(
-      "Password updated."
+      pt ? "Senha atualizada." : "Password updated."
     );
   };
 
@@ -362,7 +367,7 @@ export default function Header({
               "
             >
               <span className="text-slate-500">
-                Role
+                {pt ? "Função" : "Role"}
               </span>
               <span
                 className="
@@ -377,6 +382,39 @@ export default function Header({
               >
                 {currentUser?.role ?? "USER"}
               </span>
+            </div>
+
+            <div className="mt-4 border-t pt-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <Globe2 size={16} />
+                <span>{pt ? "Idioma" : "Language"}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setLocale("pt-BR")}
+                  aria-pressed={locale === "pt-BR"}
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                    locale === "pt-BR"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Português
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocale("en")}
+                  aria-pressed={locale === "en"}
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                    locale === "en"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  English
+                </button>
+              </div>
             </div>
 
             <div
@@ -407,7 +445,7 @@ export default function Header({
                   hover:bg-slate-100
                 "
               >
-                Change password
+                {pt ? "Alterar senha" : "Change password"}
               </button>
 
               {isPasswordOpen && (
@@ -424,7 +462,7 @@ export default function Header({
                         event.target.value
                       )
                     }
-                    placeholder="Current password"
+                    placeholder={pt ? "Senha atual" : "Current password"}
                     className="
                       w-full
                       rounded-lg
@@ -448,7 +486,7 @@ export default function Header({
                         event.target.value
                       )
                     }
-                    placeholder="New password"
+                    placeholder={pt ? "Nova senha" : "New password"}
                     className="
                       w-full
                       rounded-lg
@@ -472,7 +510,7 @@ export default function Header({
                         event.target.value
                       )
                     }
-                    placeholder="Confirm new password"
+                    placeholder={pt ? "Confirmar nova senha" : "Confirm new password"}
                     className="
                       w-full
                       rounded-lg
@@ -499,7 +537,7 @@ export default function Header({
                       `}
                     >
                       {passwordError
-                        ? "Could not update password."
+                            ? (pt ? "Não foi possível atualizar a senha." : "Could not update password.")
                         : passwordMessage}
                     </p>
                   )}
@@ -528,8 +566,8 @@ export default function Header({
                     "
                   >
                     {updatingPassword
-                      ? "Saving..."
-                      : "Save password"}
+                      ? (pt ? "Salvando..." : "Saving...")
+                      : (pt ? "Salvar senha" : "Save password")}
                   </button>
                 </form>
               )}
@@ -565,7 +603,7 @@ export default function Header({
                 hover:bg-slate-100
               "
             >
-              Logout
+              {pt ? "Sair" : "Logout"}
             </button>
           </div>
         )}

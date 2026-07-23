@@ -12,6 +12,7 @@ import type { User }
 import TaskAssignmentEditor, {
   type TaskAssignmentFormValues
 } from "./TaskAssignmentEditor";
+import { useI18n } from "../../lib/i18n";
 
 export type EditTaskFormValues = {
   title: string;
@@ -57,6 +58,7 @@ export default function EditTaskDialog({
   onClose,
   onSave
 }: EditTaskDialogProps) {
+  const { tr } = useI18n();
   const [taskForm, setTaskForm] =
     useState<EditTaskFormValues>(() =>
       getInitialValues(task)
@@ -119,7 +121,7 @@ export default function EditTaskDialog({
           "
         >
           <h3 className="text-xl font-semibold">
-            Edit task
+            {tr("Editar tarefa", "Edit task")}
           </h3>
 
           <button
@@ -134,7 +136,7 @@ export default function EditTaskDialog({
               hover:bg-slate-100
             "
           >
-            Close
+            {tr("Fechar", "Close")}
           </button>
         </div>
 
@@ -152,7 +154,7 @@ export default function EditTaskDialog({
                 text-slate-700
               "
             >
-              Title
+              {tr("Título", "Title")}
             </span>
             <input
               required
@@ -186,7 +188,7 @@ export default function EditTaskDialog({
                 text-slate-700
               "
             >
-              Description
+              {tr("Descrição", "Description")}
             </span>
             <textarea
               value={taskForm.description}
@@ -222,7 +224,7 @@ export default function EditTaskDialog({
                 text-slate-700
               "
             >
-              Status
+              {tr("Status", "Status")}
             </span>
             <select
               value={taskForm.status}
@@ -245,13 +247,13 @@ export default function EditTaskDialog({
               "
             >
               <option value="TODO">
-                To do
+                {tr("A fazer", "To do")}
               </option>
               <option value="IN_PROGRESS">
-                In progress
+                {tr("Em andamento", "In progress")}
               </option>
               <option value="DONE">
-                Done
+                {tr("Concluída", "Done")}
               </option>
             </select>
           </label>
@@ -293,7 +295,7 @@ export default function EditTaskDialog({
                 hover:bg-slate-100
               "
             >
-              Cancel
+              {tr("Cancelar", "Cancel")}
             </button>
 
             <button

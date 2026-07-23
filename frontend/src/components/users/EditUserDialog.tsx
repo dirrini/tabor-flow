@@ -7,6 +7,7 @@ import type {
   User,
   UserRole
 } from "../../types/User";
+import { useI18n } from "../../lib/i18n";
 
 export type EditUserFormValues = {
   name: string;
@@ -31,6 +32,7 @@ export default function EditUserDialog({
   onClose,
   onSave
 }: EditUserDialogProps) {
+  const { tr } = useI18n();
   const [form, setForm] =
     useState<EditUserFormValues>({
       name: user.name,
@@ -84,7 +86,7 @@ export default function EditUserDialog({
           "
         >
           <h3 className="text-xl font-semibold">
-            Edit user
+            {tr("Editar usuário", "Edit user")}
           </h3>
 
           <button
@@ -99,7 +101,7 @@ export default function EditUserDialog({
               hover:bg-slate-100
             "
           >
-            Close
+            {tr("Fechar", "Close")}
           </button>
         </div>
 
@@ -117,7 +119,7 @@ export default function EditUserDialog({
                 text-slate-700
               "
             >
-              Name
+              {tr("Nome", "Name")}
             </span>
             <input
               required
@@ -186,7 +188,7 @@ export default function EditUserDialog({
                 text-slate-700
               "
             >
-              Role
+              {tr("Função", "Role")}
             </span>
             <select
               value={form.role}
@@ -210,10 +212,10 @@ export default function EditUserDialog({
               "
             >
               <option value="MEMBER">
-                Member
+                {tr("Membro", "Member")}
               </option>
               <option value="PROJECT_MANAGER">
-                Project Manager
+                {tr("Gerente de projetos", "Project Manager")}
               </option>
             </select>
           </label>
@@ -244,7 +246,7 @@ export default function EditUserDialog({
                 hover:bg-slate-100
               "
             >
-              Cancel
+              {tr("Cancelar", "Cancel")}
             </button>
 
             <button
@@ -269,8 +271,8 @@ export default function EditUserDialog({
               "
             >
               {saving
-                ? "Saving..."
-                : "Save changes"}
+                ? tr("Salvando...", "Saving...")
+                : tr("Salvar alterações", "Save changes")}
             </button>
           </div>
         </form>

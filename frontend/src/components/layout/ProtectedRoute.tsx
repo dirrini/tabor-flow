@@ -12,6 +12,7 @@ import {
 } from "../../lib/authStorage";
 
 import type { ReactNode } from "react";
+import { useI18n } from "../../lib/i18n";
 
 type MeQueryData = {
   me: {
@@ -30,6 +31,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({
   children
 }: ProtectedRouteProps) {
+  const { tr } = useI18n();
   const location = useLocation();
   const token = getAuthToken();
   const {
@@ -64,7 +66,7 @@ export default function ProtectedRoute({
           text-slate-500
         "
       >
-        Loading session...
+        {tr("Carregando sessão...", "Loading session...")}
       </div>
     );
   }

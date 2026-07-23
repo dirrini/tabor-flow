@@ -8,12 +8,14 @@ import StatsCard from "../components/dashboard/StatsCard";
 
 import type { Project } from "../types/Project";
 import type { DashboardStats } from "../types/DashboardStats";
+import { useI18n } from "../lib/i18n";
 
 type ProjectsQueryData = {
   projects: Project[];
 };
 
 export default function Dashboard() {
+  const { tr } = useI18n();
   const { data, loading } =
     useQuery<ProjectsQueryData>(
       PROJECTS_QUERY,
@@ -48,7 +50,7 @@ export default function Dashboard() {
         "
       >
         <StatsCard
-          title="Projects"
+          title={tr("Projetos", "Projects")}
           value={
             statsData?.dashboardStats
               .totalProjects ?? 0
@@ -56,7 +58,7 @@ export default function Dashboard() {
         />
 
         <StatsCard
-          title="Tasks"
+          title={tr("Tarefas", "Tasks")}
           value={
             statsData?.dashboardStats
               .totalTasks ?? 0
@@ -64,7 +66,7 @@ export default function Dashboard() {
         />
 
         <StatsCard
-          title="Completed"
+          title={tr("Concluídas", "Completed")}
           value={
             statsData?.dashboardStats
               .completedTasks ?? 0
@@ -72,7 +74,7 @@ export default function Dashboard() {
         />
 
         <StatsCard
-          title="Team"
+          title={tr("Equipe", "Team")}
           value={
             statsData?.dashboardStats
               .teamMembers ?? 0
@@ -87,11 +89,11 @@ export default function Dashboard() {
           mb-4
         "
       >
-        Recent Projects
+        {tr("Projetos recentes", "Recent Projects")}
       </h3>
 
       {loading && (
-        <p>Loading projects...</p>
+        <p>{tr("Carregando projetos...", "Loading projects...")}</p>
       )}
 
       <div

@@ -45,6 +45,7 @@ import type {
   TaskStatus,
   TaskUser
 } from "../types/Project";
+import { useI18n } from "../lib/i18n";
 import type { User }
   from "../types/User";
 
@@ -379,6 +380,7 @@ function buildTimelineOptions(
 }
 
 export default function Timeline() {
+  const { tr } = useI18n();
   const containerRef =
     useRef<HTMLDivElement | null>(null);
   const timelineRef =
@@ -809,7 +811,7 @@ export default function Timeline() {
   );
 
   if (loading && projects.length === 0) {
-    return <p>Loading timeline...</p>;
+    return <p>{tr("Carregando cronograma...", "Loading timeline...")}</p>;
   }
 
   if (error) {
@@ -824,7 +826,7 @@ export default function Timeline() {
           text-slate-500
         "
       >
-        You do not have access to the timeline.
+        {tr("Você não tem acesso ao cronograma.", "You do not have access to the timeline.")}
       </div>
     );
   }
@@ -841,7 +843,7 @@ export default function Timeline() {
           text-slate-500
         "
       >
-        No projects available for timeline view.
+        {tr("Não há projetos disponíveis para o cronograma.", "No projects available for timeline view.")}
       </div>
     );
   }
@@ -860,7 +862,7 @@ export default function Timeline() {
       >
         <div>
           <p className="mt-1 text-sm text-slate-500">
-            Keep your projects on schedule. Monitor workload distribution and track estimated delivery dates across your entire team in one dynamic timeline view.
+            {tr("Mantenha seus projetos no prazo. Acompanhe a distribuição de trabalho e as datas estimadas de entrega de toda a equipe em uma visão dinâmica.", "Keep your projects on schedule. Monitor workload distribution and track estimated delivery dates across your entire team in one dynamic timeline view.")}
           </p>
         </div>
 
@@ -874,7 +876,7 @@ export default function Timeline() {
               text-slate-700
             "
           >
-            Project
+            {tr("Projeto", "Project")}
           </span>
           <select
             value={
@@ -1008,7 +1010,7 @@ export default function Timeline() {
                   {projectUsers.length}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Users
+                  {tr("Usuários", "Users")}
                 </p>
               </div>
 
@@ -1024,7 +1026,7 @@ export default function Timeline() {
                   {assignments.length}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Assignments
+                  {tr("Atribuições", "Assignments")}
                 </p>
               </div>
 
@@ -1040,7 +1042,7 @@ export default function Timeline() {
                   {completedAssignments}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Done
+                  {tr("Concluídas", "Done")}
                 </p>
               </div>
             </div>
@@ -1078,7 +1080,7 @@ export default function Timeline() {
                     text-slate-700
                   "
                 >
-                  Start
+                  {tr("Início", "Start")}
                 </span>
                 <input
                   type="date"
@@ -1112,7 +1114,7 @@ export default function Timeline() {
                     text-slate-700
                   "
                 >
-                  End
+                  {tr("Fim", "End")}
                 </span>
                 <input
                   type="date"
@@ -1164,7 +1166,7 @@ export default function Timeline() {
                 hover:bg-slate-100
               "
             >
-              Current month
+              {tr("Mês atual", "Current month")}
             </button>
           </div>
 
@@ -1210,7 +1212,7 @@ export default function Timeline() {
                   "
                 >
                   <X size={14} />
-                  Show {user.name}
+                  {tr("Mostrar", "Show")} {user.name}
                 </button>
               ))}
             </div>
@@ -1228,7 +1230,7 @@ export default function Timeline() {
                 text-slate-500
               "
             >
-              No task assignments with estimated dates yet.
+              {tr("Ainda não há atribuições de tarefas com datas estimadas.", "No task assignments with estimated dates yet.")}
             </div>
           )}
 
@@ -1243,13 +1245,13 @@ export default function Timeline() {
             "
           >
             <span className="timeline-legend timeline-legend-todo">
-              To do
+              {tr("A fazer", "To do")}
             </span>
             <span className="timeline-legend timeline-legend-in-progress">
-              In progress
+              {tr("Em andamento", "In progress")}
             </span>
             <span className="timeline-legend timeline-legend-done">
-              Done
+              {tr("Concluída", "Done")}
             </span>
           </div>
 
@@ -1271,7 +1273,7 @@ export default function Timeline() {
           projectUsers={projectUsers}
           errorMessage={
             createTaskError
-              ? "Could not create task."
+              ? tr("Não foi possível criar a tarefa.", "Could not create task.")
               : undefined
           }
           onClose={() =>
@@ -1288,7 +1290,7 @@ export default function Timeline() {
           projectUsers={projectUsers}
           errorMessage={
             updateTaskError
-              ? "Could not update task."
+              ? tr("Não foi possível atualizar a tarefa.", "Could not update task.")
               : undefined
           }
           onClose={() =>

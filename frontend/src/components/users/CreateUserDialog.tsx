@@ -5,6 +5,7 @@ import {
 
 import type { UserRole }
   from "../../types/User";
+import { useI18n } from "../../lib/i18n";
 
 export type CreateUserFormValues = {
   name: string;
@@ -35,6 +36,7 @@ export default function CreateUserDialog({
   onClose,
   onCreate
 }: CreateUserDialogProps) {
+  const { tr } = useI18n();
   const [form, setForm] =
     useState<CreateUserFormValues>(
       initialForm
@@ -86,7 +88,7 @@ export default function CreateUserDialog({
           "
         >
           <h3 className="text-xl font-semibold">
-            New user
+            {tr("Novo usuário", "New user")}
           </h3>
 
           <button
@@ -101,7 +103,7 @@ export default function CreateUserDialog({
               hover:bg-slate-100
             "
           >
-            Close
+            {tr("Fechar", "Close")}
           </button>
         </div>
 
@@ -119,7 +121,7 @@ export default function CreateUserDialog({
                 text-slate-700
               "
             >
-              Name
+              {tr("Nome", "Name")}
             </span>
             <input
               required
@@ -196,7 +198,7 @@ export default function CreateUserDialog({
                   text-slate-700
                 "
               >
-                Password
+              {tr("Senha", "Password")}
               </span>
               <input
                 required
@@ -233,7 +235,7 @@ export default function CreateUserDialog({
                   text-slate-700
                 "
               >
-                Role
+              {tr("Função", "Role")}
               </span>
               <select
                 value={form.role}
@@ -257,10 +259,10 @@ export default function CreateUserDialog({
                 "
               >
                 <option value="MEMBER">
-                  Member
+                {tr("Membro", "Member")}
                 </option>
                 <option value="PROJECT_MANAGER">
-                  Project Manager
+                {tr("Gerente de projetos", "Project Manager")}
                 </option>
               </select>
             </label>
@@ -292,7 +294,7 @@ export default function CreateUserDialog({
                 hover:bg-slate-100
               "
             >
-              Cancel
+              {tr("Cancelar", "Cancel")}
             </button>
 
             <button
@@ -318,8 +320,8 @@ export default function CreateUserDialog({
               "
             >
               {creating
-                ? "Creating..."
-                : "Create user"}
+                ? tr("Criando...", "Creating...")
+                : tr("Criar usuário", "Create user")}
             </button>
           </div>
         </form>

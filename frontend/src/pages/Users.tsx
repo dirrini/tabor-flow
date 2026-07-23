@@ -26,6 +26,7 @@ import {
 } from "../graphql/queries/auth";
 
 import type { User } from "../types/User";
+import { useI18n } from "../lib/i18n";
 
 type UsersQueryData = {
   users: User[];
@@ -58,6 +59,7 @@ function formatRole(role: string) {
 }
 
 export default function Users() {
+  const { tr } = useI18n();
   const [isCreateOpen, setIsCreateOpen] =
     useState(false);
   const [sortKey, setSortKey] =
@@ -236,7 +238,7 @@ export default function Users() {
               text-slate-500
             "
           >
-            Manage who can access TaborFlow.
+            {tr("Gerencie quem pode acessar o TaborFlow.", "Manage who can access TaborFlow.")}
           </p>
         </div>
 
@@ -258,13 +260,13 @@ export default function Users() {
               hover:bg-slate-700
             "
           >
-            New user
+            {tr("Novo usuário", "New user")}
           </button>
         )}
       </div>
 
       {loading && (
-        <p>Loading users...</p>
+        <p>{tr("Carregando usuários...", "Loading users...")}</p>
       )}
 
       {error && (
@@ -321,9 +323,9 @@ export default function Users() {
                       focus:ring-2
                       focus:ring-slate-300
                     "
-                    aria-label="Sort users by name"
+                    aria-label={tr("Ordenar usuários por nome", "Sort users by name")}
                   >
-                    <span>Name</span>
+                    <span>{tr("Nome", "Name")}</span>
                     {getSortIcon("name")}
                   </button>
                 </th>
@@ -353,7 +355,7 @@ export default function Users() {
                       focus:ring-2
                       focus:ring-slate-300
                     "
-                    aria-label="Sort users by email"
+                    aria-label={tr("Ordenar usuários por e-mail", "Sort users by email")}
                   >
                     <span>Email</span>
                     {getSortIcon("email")}
@@ -385,9 +387,9 @@ export default function Users() {
                       focus:ring-2
                       focus:ring-slate-300
                     "
-                    aria-label="Sort users by role"
+                    aria-label={tr("Ordenar usuários por função", "Sort users by role")}
                   >
-                    <span>Role</span>
+                    <span>{tr("Função", "Role")}</span>
                     {getSortIcon("role")}
                   </button>
                 </th>
@@ -440,7 +442,11 @@ export default function Users() {
                         text-slate-700
                       "
                     >
-                      {formatRole(user.role)}
+                      {{
+                        PROJECT_MANAGER: tr("Gerente de projetos", "Project Manager"),
+                        MEMBER: tr("Membro", "Member"),
+                        ADMIN: tr("Administrador", "Administrator")
+                      }[user.role] ?? formatRole(user.role)}
                     </span>
                   </td>
                 </tr>
@@ -457,7 +463,7 @@ export default function Users() {
                 text-slate-500
               "
             >
-              No users found.
+              {tr("Nenhum usuário encontrado.", "No users found.")}
             </div>
           )}
         </div>

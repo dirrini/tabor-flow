@@ -5,6 +5,7 @@ import {
 
 import type { Product }
   from "../../types/Project";
+import { useI18n } from "../../lib/i18n";
 
 export type ProductFormValues = {
   status: string;
@@ -61,6 +62,7 @@ export default function ProductDialog({
   onClose,
   onSave
 }: ProductDialogProps) {
+  const { tr } = useI18n();
   const [form, setForm] =
     useState<ProductFormValues>(() =>
       getInitialValues(product)
@@ -140,7 +142,7 @@ export default function ProductDialog({
               hover:bg-slate-100
             "
           >
-            Close
+            {tr("Fechar", "Close")}
           </button>
         </div>
 
@@ -158,7 +160,7 @@ export default function ProductDialog({
                 text-slate-700
               "
             >
-              SAP external code
+              {tr("Código externo", "External code")}
             </span>
             <input
               disabled
@@ -189,7 +191,7 @@ export default function ProductDialog({
           >
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">
-                Status
+                {tr("Status", "Status")}
               </span>
               <input
                 required
@@ -216,7 +218,7 @@ export default function ProductDialog({
 
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">
-                Vendor
+                {tr("Fornecedor", "Vendor")}
               </span>
               <input
                 required
@@ -243,7 +245,7 @@ export default function ProductDialog({
 
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">
-                Material code
+                {tr("Código do material", "Material code")}
               </span>
               <input
                 required
@@ -270,7 +272,7 @@ export default function ProductDialog({
 
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">
-                Quantity
+                {tr("Quantidade", "Quantity")}
               </span>
               <input
                 required
@@ -303,7 +305,7 @@ export default function ProductDialog({
 
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-slate-700">
-              Material description
+              {tr("Descrição do material", "Material description")}
             </span>
             <textarea
               required
@@ -332,7 +334,7 @@ export default function ProductDialog({
 
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-slate-700">
-              Delivery date
+              {tr("Data de entrega", "Delivery date")}
             </span>
             <input
               required
@@ -384,7 +386,7 @@ export default function ProductDialog({
                 hover:bg-slate-100
               "
             >
-              Cancel
+              {tr("Cancelar", "Cancel")}
             </button>
 
             <button
