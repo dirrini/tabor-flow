@@ -192,6 +192,7 @@ export default function EditUserDialog({
             </span>
             <select
               value={form.role}
+              disabled={user.role === "ADMIN"}
               onChange={(event) =>
                 setForm({
                   ...form,
@@ -209,8 +210,19 @@ export default function EditUserDialog({
                 py-2
                 outline-none
                 focus:border-slate-900
+                disabled:cursor-not-allowed
+                disabled:bg-slate-100
+                disabled:text-slate-600
               "
             >
+              {user.role === "ADMIN" && (
+                <option value="ADMIN">
+                  {tr(
+                    "Administrador e gerente de projetos",
+                    "Administrator and Project Manager"
+                  )}
+                </option>
+              )}
               <option value="MEMBER">
                 {tr("Membro", "Member")}
               </option>

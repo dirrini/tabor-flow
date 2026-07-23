@@ -445,7 +445,10 @@ export default function Users() {
                       {{
                         PROJECT_MANAGER: tr("Gerente de projetos", "Project Manager"),
                         MEMBER: tr("Membro", "Member"),
-                        ADMIN: tr("Administrador", "Administrator")
+                        ADMIN: tr(
+                          "Administrador · Gerente de projetos",
+                          "Administrator · Project Manager"
+                        )
                       }[user.role] ?? formatRole(user.role)}
                     </span>
                   </td>

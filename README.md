@@ -20,6 +20,7 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 
 - Project portfolio dashboard
 - Project, task, product, and user management
+- Administrator role with inherited project manager capabilities
 - Project status and progress tracking
 - User assignment to projects and tasks
 - Estimated start and end dates for assignments

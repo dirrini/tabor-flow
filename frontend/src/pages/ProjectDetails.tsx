@@ -558,7 +558,8 @@ export default function ProjectDetails() {
   const projectManagers =
     projectUsers.filter(
       (user) =>
-        user.role === "PROJECT_MANAGER"
+        user.role === "PROJECT_MANAGER" ||
+        user.role === "ADMIN"
     );
   const members = projectUsers.filter(
     (user) => user.role === "MEMBER"

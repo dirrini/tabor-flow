@@ -497,7 +497,8 @@ export default function Timeline() {
       selectedProject?.users?.filter(
         (user) =>
           user.role === "PROJECT_MANAGER" ||
-          user.role === "MEMBER"
+          user.role === "MEMBER" ||
+          user.role === "ADMIN"
       ) ?? [],
     [selectedProject]
   );

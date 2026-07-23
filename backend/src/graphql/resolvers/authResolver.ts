@@ -49,14 +49,20 @@ export const authResolver = {
       __: unknown,
       context: GraphQLContext
     ) => {
-      requireUserManager(context);
+      const currentUser =
+        requireUserManager(context);
 
       return prisma.user.findMany({
         where: {
-          tenantId: context.currentUser!.tenantId,
-          role: {
-            not: "ADMIN"
-          }
+          tenantId: currentUser.tenantId,
+          ...(currentUser.role === "ADMIN"
+            ? {
+                OR: [
+                  { role: { not: "ADMIN" } },
+                  { id: currentUser.id }
+                ]
+              }
+            : { role: { not: "ADMIN" } })
         },
         orderBy: {
           createdAt: "desc"
@@ -180,7 +186,8 @@ export const authResolver = {
       },
       context: GraphQLContext
     ) => {
-      requireUserManager(context);
+      const currentUser =
+        requireUserManager(context);
 
       const email =
         args.input.email
@@ -219,7 +226,7 @@ export const authResolver = {
           name: args.input.name.trim(),
           email,
           role,
-          tenantId: context.currentUser!.tenantId
+          tenantId: currentUser.tenantId
         },
         include: { tenant: true }
       });
@@ -244,16 +251,26 @@ export const authResolver = {
       },
       context: GraphQLContext
     ) => {
-      requireUserManager(context);
+      const currentUser =
+        requireUserManager(context);
 
       const user =
         await prisma.user.findFirst({
           where: {
-            id: Number(args.id), tenantId: context.currentUser!.tenantId
+            id: Number(args.id),
+            tenantId: currentUser.tenantId
           }
         });
 
-      if (!user || user.role === "ADMIN") {
+      const canEditAdmin =
+        user?.role === "ADMIN" &&
+        currentUser.role === "ADMIN" &&
+        user.id === currentUser.id;
+
+      if (
+        !user ||
+        (user.role === "ADMIN" && !canEditAdmin)
+      ) {
         throw new GraphQLError(
           "User not found.",
           {
@@ -266,8 +283,12 @@ export const authResolver = {
 
       if (
         args.input.role &&
-        !manageableRoles.includes(
-          args.input.role
+        (
+          user.role === "ADMIN"
+            ? args.input.role !== "ADMIN"
+            : !manageableRoles.includes(
+                args.input.role
+              )
         )
       ) {
         throw new GraphQLError(
@@ -289,7 +310,8 @@ export const authResolver = {
         const existingUser =
           await prisma.user.findFirst({
             where: {
-              email, tenantId: context.currentUser!.tenantId
+              email,
+              id: { not: user.id }
             }
           });
 
