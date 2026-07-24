@@ -12,6 +12,7 @@ import {
   ArrowRight,
   CalendarDays,
   Check,
+  CheckCircle2,
   Copy,
   CreditCard,
   LockKeyhole,
@@ -97,6 +98,10 @@ export default function Workspace() {
     useState<PixPayment | null>(null);
   const [pixCopied, setPixCopied] =
     useState(false);
+  const [
+    paymentConfirmed,
+    setPaymentConfirmed
+  ] = useState(false);
   const [
     waitingForCard,
     setWaitingForCard
@@ -190,6 +195,11 @@ export default function Workspace() {
         ) {
           setPixPayment(null);
           await refetch();
+          setPaymentConfirmed(true);
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
         }
       } finally {
         checking = false;
@@ -209,6 +219,21 @@ export default function Workspace() {
     pixPayment,
     refetch
   ]);
+
+  useEffect(() => {
+    if (!paymentConfirmed) return;
+
+    const timer = window.setTimeout(
+      () => {
+        setPaymentConfirmed(false);
+      },
+      7000
+    );
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [paymentConfirmed]);
 
   useEffect(() => {
     if (!waitingForCard) return;
@@ -353,6 +378,45 @@ export default function Workspace() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-7">
+      {paymentConfirmed && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 top-5 z-50 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-start gap-3 rounded-xl border border-emerald-300 bg-emerald-700 px-5 py-4 text-white shadow-xl"
+        >
+          <CheckCircle2
+            size={22}
+            className="mt-0.5 shrink-0"
+          />
+          <div>
+            <p className="font-bold">
+              {tr(
+                "Pagamento Pix confirmado!",
+                "Pix payment confirmed!"
+              )}
+            </p>
+            <p className="mt-1 text-sm text-emerald-50">
+              {tr(
+                "A validade Premium do workspace foi atualizada com sucesso.",
+                "The workspace Premium validity was successfully updated."
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setPaymentConfirmed(false);
+            }}
+            className="ml-auto shrink-0 text-lg leading-none text-emerald-100 hover:text-white"
+            aria-label={tr(
+              "Fechar aviso",
+              "Close notification"
+            )}
+          >
+            ×
+          </button>
+        </div>
+      )}
       {checkoutResult === "success" && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             {tr(
