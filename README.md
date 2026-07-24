@@ -158,6 +158,11 @@ Production builds can be validated with `npm run build` inside both `frontend` a
 | `APP_URL` | Public frontend URL used to generate email verification links |
 | `RESEND_API_KEY` | Resend API key used for transactional email |
 | `RESEND_FROM_EMAIL` | Sender name and address on a domain verified by Resend |
+| `ASAAS_API_KEY` | Asaas API key; use a Sandbox key outside production |
+| `ASAAS_API_URL` | Asaas API base URL; Sandbox uses `https://api-sandbox.asaas.com/v3` |
+| `ASAAS_WEBHOOK_TOKEN` | Long random token validated from the `asaas-access-token` webhook header |
+| `PREMIUM_MONTHLY_PRICE` | Authoritative monthly checkout price in BRL |
+| `PREMIUM_ANNUAL_PRICE` | Authoritative annual checkout price in BRL |
 | `SEED_INTEGRATION_CLIENT_ID` | Optional external integration client identifier |
 | `SEED_INTEGRATION_CLIENT_SECRET` | Optional external integration secret |
 | `SEED_INTEGRATION_SCOPES` | Optional integration scopes |
@@ -232,7 +237,21 @@ Registration creates an organization tenant and its first administrator. The ten
 
 Signing in with Google using an email that already exists accesses the existing user and tenant instead of creating a duplicate workspace.
 
-Each tenant starts on the `FREE` plan. The workspace creator can view plan information and the Premium upgrade preparation screen from the profile menu. Payment activation will be synchronized through the Asaas API and authenticated, idempotent webhooks in a later integration step.
+Each tenant starts on the `FREE` plan. The workspace creator can view plan information and start a Premium checkout from the profile menu. Payment activation is synchronized through the Asaas API and authenticated, idempotent webhooks.
+
+## Asaas billing
+
+Premium access is sold as one-time monthly or yearly periods. Pix is generated and displayed inside the Premium article, while card payments open the Asaas-hosted Checkout in a monitored tab so card details never pass through TaborFlow. The CPF/CNPJ required to create the first Pix customer is sent to Asaas but is not persisted by TaborFlow; only the technical Asaas customer and payment identifiers are stored for reconciliation. The frontend price variables are display-only; the backend `PREMIUM_*_PRICE` values are authoritative.
+
+Each approved payment extends the current Premium expiration by one month or one year. Payment entitlement is applied idempotently, so polling and webhook delivery cannot extend the same purchase twice.
+
+Configure the Asaas webhook to send Checkout events to:
+
+```text
+https://YOUR_API_HOST/webhooks/asaas
+```
+
+Enable `CHECKOUT_CREATED`, `CHECKOUT_PAID`, `CHECKOUT_CANCELED`, `CHECKOUT_EXPIRED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, and `PAYMENT_REFUNDED`, and configure the same authentication token stored in `ASAAS_WEBHOOK_TOKEN`. Events are persisted by ID for idempotency. `CHECKOUT_PAID` confirms card Checkout purchases and `PAYMENT_RECEIVED` confirms embedded Pix purchases; callback redirects never activate Premium access.
 
 ## Author
 

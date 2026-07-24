@@ -57,7 +57,50 @@ export const ME_QUERY = gql`
         name
         slug
         plan
+        subscriptionStatus
+        premiumExpiresAt
       }
+    }
+  }
+`;
+
+export const CREATE_PREMIUM_CHECKOUT_MUTATION = gql`
+  mutation CreatePremiumCheckout($billingCycle: String!) {
+    createPremiumCheckout(billingCycle: $billingCycle) {
+      id
+      url
+    }
+  }
+`;
+
+export const CREATE_PREMIUM_PIX_PAYMENT_MUTATION = gql`
+  mutation CreatePremiumPixPayment(
+    $billingCycle: String!
+    $cpfCnpj: String!
+  ) {
+    createPremiumPixPayment(
+      billingCycle: $billingCycle
+      cpfCnpj: $cpfCnpj
+    ) {
+      id
+      encodedImage
+      payload
+      expirationDate
+      status
+    }
+  }
+`;
+
+export const PREMIUM_PAYMENT_STATUS_QUERY = gql`
+  query PremiumPaymentStatus(
+    $paymentId: String!
+  ) {
+    premiumPaymentStatus(
+      paymentId: $paymentId
+    ) {
+      id
+      status
+      paid
     }
   }
 `;

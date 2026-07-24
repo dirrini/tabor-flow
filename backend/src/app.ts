@@ -5,6 +5,9 @@ import {
   createIntegrationToken,
   hashApiKey
 } from "./lib/auth";
+import {
+  handleAsaasWebhook
+} from "./lib/asaas";
 
 export const app = express();
 
@@ -21,6 +24,11 @@ app.use(
   express.urlencoded({
     extended: false
   })
+);
+
+app.post(
+  "/webhooks/asaas",
+  handleAsaasWebhook
 );
 
 app.post(

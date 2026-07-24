@@ -7,6 +7,7 @@ import {
 } from "../../lib/auth";
 import {
   requireAuth,
+  requireAdmin,
   requireAuthenticatedUser,
   requireUserManager,
   type GraphQLContext
@@ -19,6 +20,12 @@ import {
   verifyEmailVerificationToken,
   verifyInvitationToken
 } from "../../lib/emailVerification";
+import {
+  createAsaasCheckout,
+  createAsaasPixPayment,
+  getAsaasPaymentStatus,
+  type BillingCycle
+} from "../../lib/asaas";
 
 const googleClient = new OAuth2Client();
 
@@ -33,8 +40,48 @@ const manageableRoles = [
 ];
 
 export const authResolver = {
+  Tenant: {
+    premiumExpiresAt: (
+      tenant: {
+        premiumExpiresAt: Date | null;
+      }
+    ) =>
+      tenant.premiumExpiresAt
+        ?.toISOString() ?? null
+  },
   User: {
-    tenant: (user: { tenantId: number }) => prisma.tenant.findUnique({ where: { id: user.tenantId } }),
+    tenant: async (
+      user: {
+        tenantId: number;
+      }
+    ) => {
+      const tenant =
+        await prisma.tenant.findUnique({
+          where: {
+            id: user.tenantId
+          }
+        });
+
+      if (
+        tenant?.plan === "PREMIUM" &&
+        tenant.premiumExpiresAt &&
+        tenant.premiumExpiresAt <=
+          new Date()
+      ) {
+        return prisma.tenant.update({
+          where: {
+            id: tenant.id
+          },
+          data: {
+            plan: "FREE",
+            subscriptionStatus:
+              "EXPIRED"
+          }
+        });
+      }
+
+      return tenant;
+    },
     emailVerified: (user: { emailVerifiedAt: Date | null }) => Boolean(user.emailVerifiedAt)
   },
   Query: {
@@ -68,6 +115,37 @@ export const authResolver = {
           createdAt: "desc"
         }
       });
+    },
+    premiumPaymentStatus: async (
+      _: unknown,
+      args: {
+        paymentId: string;
+      },
+      context: GraphQLContext
+    ) => {
+      const currentUser =
+        requireAdmin(context);
+
+      try {
+        return await getAsaasPaymentStatus(
+          currentUser.tenantId,
+          args.paymentId
+        );
+      } catch (error) {
+        console.error(
+          "Unable to check Asaas payment.",
+          error
+        );
+        throw new GraphQLError(
+          "Could not check payment status.",
+          {
+            extensions: {
+              code:
+                "SERVICE_UNAVAILABLE"
+            }
+          }
+        );
+      }
     }
   },
 
@@ -159,6 +237,143 @@ export const authResolver = {
       if (user.emailVerifiedAt) return true;
       await sendVerificationEmail(user);
       return true;
+    },
+    createPremiumCheckout: async (
+      _: unknown,
+      args: {
+        billingCycle: string;
+      },
+      context: GraphQLContext
+    ) => {
+      const currentUser =
+        requireAdmin(context);
+      const billingCycle =
+        args.billingCycle as
+          BillingCycle;
+
+      if (
+        billingCycle !== "MONTHLY" &&
+        billingCycle !== "YEARLY"
+      ) {
+        throw new GraphQLError(
+          "Invalid billing cycle.",
+          {
+            extensions: {
+              code: "BAD_USER_INPUT"
+            }
+          }
+        );
+      }
+
+      const tenant =
+        await prisma.tenant.findUnique({
+          where: {
+            id: currentUser.tenantId
+          }
+        });
+
+      if (!tenant) {
+        throw new GraphQLError(
+          "Workspace not found.",
+          {
+            extensions: {
+              code: "NOT_FOUND"
+            }
+          }
+        );
+      }
+
+      try {
+        return await createAsaasCheckout({
+          tenantId: tenant.id,
+          billingCycle
+        });
+      } catch (error) {
+        console.error(
+          "Unable to create Asaas checkout.",
+          error
+        );
+        throw new GraphQLError(
+          "Could not start the payment checkout.",
+          {
+            extensions: {
+              code:
+                "SERVICE_UNAVAILABLE"
+            }
+          }
+        );
+      }
+    },
+    createPremiumPixPayment: async (
+      _: unknown,
+      args: {
+        billingCycle: string;
+        cpfCnpj: string;
+      },
+      context: GraphQLContext
+    ) => {
+      const currentUser =
+        requireAdmin(context);
+      const billingCycle =
+        args.billingCycle as
+          BillingCycle;
+      const cpfCnpj =
+        args.cpfCnpj.replace(/\D/g, "");
+
+      if (
+        billingCycle !== "MONTHLY" &&
+        billingCycle !== "YEARLY"
+      ) {
+        throw new GraphQLError(
+          "Invalid billing cycle.",
+          {
+            extensions: {
+              code: "BAD_USER_INPUT"
+            }
+          }
+        );
+      }
+
+      if (
+        cpfCnpj.length !== 11 &&
+        cpfCnpj.length !== 14
+      ) {
+        throw new GraphQLError(
+          "Invalid CPF or CNPJ.",
+          {
+            extensions: {
+              code: "BAD_USER_INPUT"
+            }
+          }
+        );
+      }
+
+      try {
+        return await createAsaasPixPayment({
+          tenantId:
+            currentUser.tenantId,
+          customerName:
+            currentUser.name,
+          customerEmail:
+            currentUser.email,
+          cpfCnpj,
+          billingCycle
+        });
+      } catch (error) {
+        console.error(
+          "Unable to create Asaas Pix payment.",
+          error
+        );
+        throw new GraphQLError(
+          "Could not create the Pix payment.",
+          {
+            extensions: {
+              code:
+                "SERVICE_UNAVAILABLE"
+            }
+          }
+        );
+      }
     },
     acceptInvitation: async (_: unknown, args: { token: string; password: string }) => {
       if (args.password.length < 8) throw new GraphQLError("Password must be at least 8 characters.", { extensions: { code: "BAD_USER_INPUT" } });

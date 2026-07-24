@@ -14,6 +14,27 @@ export const authSchema = `#graphql
     name: String!
     slug: String!
     plan: String!
+    subscriptionStatus: String!
+    premiumExpiresAt: String
+  }
+
+  type CheckoutSession {
+    id: String!
+    url: String!
+  }
+
+  type PixPayment {
+    id: String!
+    encodedImage: String!
+    payload: String!
+    expirationDate: String
+    status: String!
+  }
+
+  type PaymentStatus {
+    id: String!
+    status: String!
+    paid: Boolean!
   }
 
   type AuthPayload {
@@ -24,6 +45,9 @@ export const authSchema = `#graphql
   extend type Query {
     me: User
     users: [User!]!
+    premiumPaymentStatus(
+      paymentId: String!
+    ): PaymentStatus!
   }
 
   input CreateUserInput {
@@ -54,6 +78,11 @@ export const authSchema = `#graphql
     verifyEmail(token: String!): Boolean!
     resendVerificationEmail: Boolean!
     acceptInvitation(token: String!, password: String!): AuthPayload!
+    createPremiumCheckout(billingCycle: String!): CheckoutSession!
+    createPremiumPixPayment(
+      billingCycle: String!
+      cpfCnpj: String!
+    ): PixPayment!
 
     createUser(
       input: CreateUserInput!

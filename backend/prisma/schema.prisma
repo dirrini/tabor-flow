@@ -59,9 +59,37 @@ model Tenant {
   name      String
   slug      String    @unique
   plan      String    @default("FREE")
+  subscriptionStatus String @default("INACTIVE")
+  premiumExpiresAt DateTime?
+  asaasCustomerId String? @unique
   createdAt DateTime  @default(now())
   users     User[]
   projects  Project[]
+  billingCheckouts BillingCheckout[]
+}
+
+model BillingCheckout {
+  id                Int      @id @default(autoincrement())
+  tenantId          Int
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  asaasCheckoutId   String   @unique
+  externalReference String   @unique
+  billingCycle      String
+  amount            Float
+  paymentMethod     String   @default("CARD")
+  status            String   @default("ACTIVE")
+  checkoutUrl       String
+  entitlementAppliedAt DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([tenantId, status])
+}
+
+model BillingWebhookEvent {
+  id          String   @id
+  eventType   String
+  processedAt DateTime @default(now())
 }
 
 model ProjectUser {
