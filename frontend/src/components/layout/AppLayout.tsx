@@ -44,6 +44,7 @@ export default function AppLayout() {
         />
 
         <main
+          data-app-scroll-container
           className="
             flex-1
             overflow-auto

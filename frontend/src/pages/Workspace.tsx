@@ -196,10 +196,22 @@ export default function Workspace() {
           setPixPayment(null);
           await refetch();
           setPaymentConfirmed(true);
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-          });
+          const scrollContainer =
+            document.querySelector<HTMLElement>(
+              "[data-app-scroll-container]"
+            );
+
+          if (scrollContainer) {
+            scrollContainer.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          } else {
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
         }
       } finally {
         checking = false;
