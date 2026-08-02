@@ -6,6 +6,10 @@ import {
 } from "../context";
 import { GraphQLError } from "graphql";
 import { prisma } from "../../lib/prisma";
+import {
+  ensureCanActivateProject,
+  lockTenantPlanUsage
+} from "../../lib/planLimits";
 
 const projectInclude = {
   tasks: {
@@ -446,22 +450,37 @@ export const projectResolver = {
       const currentUser =
         requireProjectManager(context);
 
-      const project =
-        await prisma.project.create({
-        data: {
-          ...args.input,
-          tenantId: currentUser.tenantId,
-          externalCode:
-            args.input.externalCode?.trim() ||
-            null,
-          users: {
-            create: {
-              userId: currentUser.id
-            }
+      const project = await prisma.$transaction(
+        async (tx) => {
+          await lockTenantPlanUsage(
+            tx,
+            currentUser.tenantId
+          );
+
+          if (args.input.status !== "COMPLETED") {
+            await ensureCanActivateProject(
+              currentUser.tenantId,
+              tx
+            );
           }
-        },
-        include: projectInclude
-      });
+
+          return tx.project.create({
+            data: {
+              ...args.input,
+              tenantId: currentUser.tenantId,
+              externalCode:
+                args.input.externalCode?.trim() ||
+                null,
+              users: {
+                create: {
+                  userId: currentUser.id
+                }
+              }
+            },
+            include: projectInclude
+          });
+        }
+      );
 
       if (project.externalCode) {
         await enableProductIntegrationsForProject(
@@ -485,28 +504,55 @@ export const projectResolver = {
       },
       context: GraphQLContext
     ) => {
-      await ensureCanManageProject(
+      const currentUser = await ensureCanManageProject(
         Number(args.id),
         context
       );
 
-      const project =
-        await prisma.project.update({
-        where: {
-          id: Number(args.id)
-        },
-        data: {
-          ...args.input,
-          ...(args.input.externalCode !== undefined
-            ? {
-                externalCode:
-                  args.input.externalCode?.trim() ||
-                  null
+      const project = await prisma.$transaction(
+        async (tx) => {
+          await lockTenantPlanUsage(
+            tx,
+            currentUser.tenantId
+          );
+          const existingProject =
+            await tx.project.findUnique({
+              where: { id: Number(args.id) },
+              select: {
+                status: true,
+                tenantId: true
               }
-            : {})
-        },
-        include: projectInclude
-      });
+            });
+
+          if (
+            args.input.status &&
+            args.input.status !== "COMPLETED" &&
+            existingProject?.status === "COMPLETED"
+          ) {
+            await ensureCanActivateProject(
+              existingProject.tenantId,
+              tx
+            );
+          }
+
+          return tx.project.update({
+            where: {
+              id: Number(args.id)
+            },
+            data: {
+              ...args.input,
+              ...(args.input.externalCode !== undefined
+                ? {
+                    externalCode:
+                      args.input.externalCode?.trim() ||
+                      null
+                  }
+                : {})
+            },
+            include: projectInclude
+          });
+        }
+      );
 
       if (project.externalCode) {
         await enableProductIntegrationsForProject(

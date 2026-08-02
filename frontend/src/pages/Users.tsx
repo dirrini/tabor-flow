@@ -6,6 +6,7 @@ import {
   useMutation,
   useQuery
 } from "@apollo/client/react";
+import { Link } from "react-router-dom";
 import {
   ArrowDown,
   ArrowUp,
@@ -20,6 +21,7 @@ import EditUserDialog, {
 } from "../components/users/EditUserDialog";
 import {
   CREATE_USER_MUTATION,
+  DELETE_USER_MUTATION,
   ME_QUERY,
   UPDATE_USER_MUTATION,
   USERS_QUERY
@@ -35,6 +37,12 @@ type UsersQueryData = {
 type MeQueryData = {
   me: {
     role: string;
+    tenant: {
+      usage: {
+        users: number;
+        userLimit: number | null;
+      };
+    };
   } | null;
 };
 
@@ -79,6 +87,12 @@ export default function Users() {
     meData?.me?.role === "ADMIN" ||
     meData?.me?.role ===
       "PROJECT_MANAGER";
+  const userUsage = meData?.me?.tenant.usage;
+  const userLimitReached = Boolean(
+    userUsage?.userLimit !== null &&
+      userUsage?.userLimit !== undefined &&
+      userUsage.users >= userUsage.userLimit
+  );
   const {
     data,
     loading,
@@ -99,7 +113,8 @@ export default function Users() {
     CREATE_USER_MUTATION,
     {
       refetchQueries: [
-        { query: USERS_QUERY }
+        { query: USERS_QUERY },
+        { query: ME_QUERY }
       ]
     }
   );
@@ -114,6 +129,21 @@ export default function Users() {
     {
       refetchQueries: [
         { query: USERS_QUERY }
+      ]
+    }
+  );
+  const [
+    deleteUser,
+    {
+      loading: deleting,
+      error: deleteError
+    }
+  ] = useMutation(
+    DELETE_USER_MUTATION,
+    {
+      refetchQueries: [
+        { query: USERS_QUERY },
+        { query: ME_QUERY }
       ]
     }
   );
@@ -143,6 +173,23 @@ export default function Users() {
       }
     });
 
+    setEditingUser(null);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!editingUser) return;
+
+    const confirmed = window.confirm(
+      tr(
+        "Remover este usuário do workspace? Suas atribuições também serão removidas.",
+        "Remove this user from the workspace? Their assignments will also be removed."
+      )
+    );
+    if (!confirmed) return;
+
+    await deleteUser({
+      variables: { id: editingUser.id }
+    });
     setEditingUser(null);
   };
 
@@ -242,7 +289,7 @@ export default function Users() {
           </p>
         </div>
 
-        {canManageUsers && (
+        {canManageUsers && !userLimitReached && (
           <button
             type="button"
             onClick={() =>
@@ -262,6 +309,19 @@ export default function Users() {
           >
             {tr("Convidar usuário", "Invite user")}
           </button>
+        )}
+        {canManageUsers && userLimitReached && meData?.me?.role === "ADMIN" && (
+          <Link
+            to="/app/workspace"
+            className="rounded-lg bg-orange-100 px-4 py-2 text-sm font-semibold text-orange-800 transition hover:bg-orange-200"
+          >
+            {tr("Limite atingido · Fazer upgrade", "Limit reached · Upgrade")}
+          </Link>
+        )}
+        {canManageUsers && userLimitReached && meData?.me?.role !== "ADMIN" && (
+          <span className="rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
+            {tr("Limite do plano atingido", "Plan limit reached")}
+          </span>
         )}
       </div>
 
@@ -472,7 +532,7 @@ export default function Users() {
         </div>
       )}
 
-      {isCreateOpen && canManageUsers && (
+      {isCreateOpen && canManageUsers && !userLimitReached && (
         <CreateUserDialog
           creating={creating}
           errorMessage={
@@ -491,15 +551,17 @@ export default function Users() {
         <EditUserDialog
           user={editingUser}
           saving={updating}
+          deleting={deleting}
           errorMessage={
-            updateError
-              ? updateError.message
+            updateError || deleteError
+              ? (updateError ?? deleteError)?.message
               : undefined
           }
           onClose={() =>
             setEditingUser(null)
           }
           onSave={handleUpdateUser}
+          onDelete={handleDeleteUser}
         />
       )}
     </div>

@@ -1,7 +1,8 @@
 import {
   useEffect,
   useRef,
-  useState
+  useState,
+  type ReactNode
 } from "react";
 import {
   useLazyQuery,
@@ -15,6 +16,7 @@ import {
   CheckCircle2,
   Copy,
   CreditCard,
+  FolderKanban,
   LockKeyhole,
   QrCode,
   Sparkles,
@@ -48,6 +50,13 @@ type WorkspaceQueryData = {
       plan: "FREE" | "PREMIUM";
       subscriptionStatus: string;
       premiumExpiresAt: string | null;
+      usage: {
+        users: number;
+        userLimit: number | null;
+        activeProjects: number;
+        activeProjectLimit: number | null;
+        consolidatedTimeline: boolean;
+      };
     };
   } | null;
 };
@@ -506,6 +515,22 @@ export default function Workspace() {
             )}
           </div>
         </div>
+        <div className="grid gap-4 border-t border-white/10 bg-white/[.03] p-7 sm:grid-cols-2 sm:p-9">
+          <UsageMeter
+            icon={<Users size={18} />}
+            label={tr("Usuários", "Users")}
+            current={workspace.usage.users}
+            limit={workspace.usage.userLimit}
+            unlimitedLabel={tr("Sem limite funcional", "No functional limit")}
+          />
+          <UsageMeter
+            icon={<FolderKanban size={18} />}
+            label={tr("Projetos ativos", "Active projects")}
+            current={workspace.usage.activeProjects}
+            limit={workspace.usage.activeProjectLimit}
+            unlimitedLabel={tr("Sem limite funcional", "No functional limit")}
+          />
+        </div>
       </section>
 
       <section>
@@ -837,6 +862,48 @@ export default function Workspace() {
           </div>
       </section>
 
+    </div>
+  );
+}
+
+function UsageMeter({
+  icon,
+  label,
+  current,
+  limit,
+  unlimitedLabel
+}: {
+  icon: ReactNode;
+  label: string;
+  current: number;
+  limit: number | null;
+  unlimitedLabel: string;
+}) {
+  const percentage =
+    limit === null
+      ? 100
+      : Math.min(100, (current / limit) * 100);
+  const atLimit = limit !== null && current >= limit;
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <div className="flex items-center justify-between gap-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
+          {icon}
+          {label}
+        </p>
+        <p className={`text-sm font-bold ${atLimit ? "text-orange-300" : "text-white"}`}>
+          {limit === null
+            ? `${current} — ${unlimitedLabel}`
+            : `${current} / ${limit}`}
+        </p>
+      </div>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div
+          className={`h-full rounded-full ${atLimit ? "bg-orange-400" : "bg-emerald-400"}`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
     </div>
   );
 }

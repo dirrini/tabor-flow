@@ -6,6 +6,7 @@ import {
   useMutation,
   useQuery
 } from "@apollo/client/react";
+import { Link } from "react-router-dom";
 
 import CreateProjectDialog, {
   type CreateProjectFormValues
@@ -25,6 +26,13 @@ import { useI18n } from "../lib/i18n";
 type MeQueryData = {
   me: {
     role: string;
+    tenant: {
+      plan: "FREE" | "PREMIUM";
+      usage: {
+        activeProjects: number;
+        activeProjectLimit: number | null;
+      };
+    };
   } | null;
 };
 
@@ -37,12 +45,21 @@ export default function Projects() {
     meData?.me?.role === "ADMIN" ||
     meData?.me?.role ===
       "PROJECT_MANAGER";
+  const projectUsage =
+    meData?.me?.tenant.usage;
+  const activeProjectLimitReached = Boolean(
+    projectUsage?.activeProjectLimit !== null &&
+      projectUsage?.activeProjectLimit !== undefined &&
+      projectUsage.activeProjects >=
+        projectUsage.activeProjectLimit
+  );
   const [
     createProject,
     { loading: creating, error: createError }
   ] = useMutation(CREATE_PROJECT_MUTATION, {
     refetchQueries: [
-      { query: PROJECTS_QUERY }
+      { query: PROJECTS_QUERY },
+      { query: ME_QUERY }
     ]
   });
   const [search, setSearch] = useState("");
@@ -133,7 +150,7 @@ export default function Projects() {
             {tr("projetos", "projects")}
           </span>
 
-          {canManageProjects && (
+          {canManageProjects && !activeProjectLimitReached && (
             <button
               type="button"
               onClick={() =>
@@ -153,6 +170,19 @@ export default function Projects() {
             >
               {tr("Novo projeto", "New project")}
             </button>
+          )}
+          {canManageProjects && activeProjectLimitReached && meData?.me?.role === "ADMIN" && (
+            <Link
+              to="/app/workspace"
+              className="rounded-lg bg-orange-100 px-4 py-2 text-sm font-semibold text-orange-800 transition hover:bg-orange-200"
+            >
+              {tr("Limite atingido · Fazer upgrade", "Limit reached · Upgrade")}
+            </Link>
+          )}
+          {canManageProjects && activeProjectLimitReached && meData?.me?.role !== "ADMIN" && (
+            <span className="rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
+              {tr("Limite do plano atingido", "Plan limit reached")}
+            </span>
           )}
         </div>
       </div>
@@ -268,7 +298,7 @@ export default function Projects() {
         )}
       </div>
 
-      {isCreateOpen && canManageProjects && (
+      {isCreateOpen && canManageProjects && !activeProjectLimitReached && (
         <CreateProjectDialog
           creating={creating}
           errorMessage={

@@ -26,6 +26,11 @@ import {
   getAsaasPaymentStatus,
   type BillingCycle
 } from "../../lib/asaas";
+import {
+  ensureCanCreateUser,
+  getWorkspacePlanUsage,
+  lockTenantPlanUsage
+} from "../../lib/planLimits";
 
 const googleClient = new OAuth2Client();
 
@@ -41,6 +46,8 @@ const manageableRoles = [
 
 export const authResolver = {
   Tenant: {
+    usage: (tenant: { id: number }) =>
+      getWorkspacePlanUsage(tenant.id),
     premiumExpiresAt: (
       tenant: {
         premiumExpiresAt: Date | null;
@@ -436,15 +443,28 @@ export const authResolver = {
         );
       }
 
-      const createdUser = await prisma.user.create({
-        data: {
-          name: args.input.name.trim(),
-          email,
-          role,
-          tenantId: currentUser.tenantId
-        },
-        include: { tenant: true }
-      });
+      const createdUser = await prisma.$transaction(
+        async (tx) => {
+          await lockTenantPlanUsage(
+            tx,
+            currentUser.tenantId
+          );
+          await ensureCanCreateUser(
+            currentUser.tenantId,
+            tx
+          );
+
+          return tx.user.create({
+            data: {
+              name: args.input.name.trim(),
+              email,
+              role,
+              tenantId: currentUser.tenantId
+            },
+            include: { tenant: true }
+          });
+        }
+      );
       try {
         await sendInvitationEmail(createdUser, createdUser.tenant.name);
       } catch (error) {
@@ -574,6 +594,31 @@ export const authResolver = {
         }
       }
       return updatedUser;
+    },
+    deleteUser: async (
+      _: unknown,
+      args: { id: string },
+      context: GraphQLContext
+    ) => {
+      const currentUser = requireUserManager(context);
+      const user = await prisma.user.findFirst({
+        where: {
+          id: Number(args.id),
+          tenantId: currentUser.tenantId
+        }
+      });
+
+      if (!user || user.role === "ADMIN") {
+        throw new GraphQLError("User not found.", {
+          extensions: { code: "NOT_FOUND" }
+        });
+      }
+
+      await prisma.user.delete({
+        where: { id: user.id }
+      });
+
+      return true;
     },
     updateMyPassword: async (
       _: unknown,

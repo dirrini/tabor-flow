@@ -18,19 +18,23 @@ export type EditUserFormValues = {
 interface EditUserDialogProps {
   user: User;
   saving: boolean;
+  deleting: boolean;
   errorMessage?: string;
   onClose: () => void;
   onSave: (
     values: EditUserFormValues
   ) => Promise<void>;
+  onDelete: () => Promise<void>;
 }
 
 export default function EditUserDialog({
   user,
   saving,
+  deleting,
   errorMessage,
   onClose,
-  onSave
+  onSave,
+  onDelete
 }: EditUserDialogProps) {
   const { tr } = useI18n();
   const [form, setForm] =
@@ -238,14 +242,20 @@ export default function EditUserDialog({
             </p>
           )}
 
-          <div
-            className="
-              flex
-              justify-end
-              gap-3
-              pt-2
-            "
-          >
+          <div className="flex flex-wrap justify-between gap-3 pt-2">
+            {user.role !== "ADMIN" && (
+              <button
+                type="button"
+                disabled={saving || deleting}
+                onClick={() => void onDelete()}
+                className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+              >
+                {deleting
+                  ? tr("Removendo...", "Removing...")
+                  : tr("Remover usuário", "Remove user")}
+              </button>
+            )}
+            <div className="ml-auto flex gap-3">
             <button
               type="button"
               onClick={onClose}
@@ -264,7 +274,7 @@ export default function EditUserDialog({
             <button
               type="submit"
               disabled={
-                saving ||
+                saving || deleting ||
                 !form.name.trim() ||
                 !form.email.trim()
               }
@@ -286,6 +296,7 @@ export default function EditUserDialog({
                 ? tr("Salvando...", "Saving...")
                 : tr("Salvar alterações", "Save changes")}
             </button>
+            </div>
           </div>
         </form>
       </div>

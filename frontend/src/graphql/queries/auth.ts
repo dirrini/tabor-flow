@@ -59,6 +59,13 @@ export const ME_QUERY = gql`
         plan
         subscriptionStatus
         premiumExpiresAt
+        usage {
+          users
+          userLimit
+          activeProjects
+          activeProjectLimit
+          consolidatedTimeline
+        }
       }
     }
   }
@@ -135,6 +142,12 @@ export const UPDATE_USER_MUTATION = gql`
       email
       role
     }
+  }
+`;
+
+export const DELETE_USER_MUTATION = gql`
+  mutation DeleteUser($id: ID!) {
+    deleteUser(id: $id)
   }
 `;
 

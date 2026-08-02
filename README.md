@@ -22,6 +22,9 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 - Project, task, product, and user management
 - Administrator role with inherited project manager capabilities
 - Free and Premium workspace plans with administrator-only plan management
+- Server-enforced Free plan limits of 5 users and 3 active projects
+- Workspace usage meters with upgrade feedback when a plan limit is reached
+- Member removal and pending invitation revocation to release user allowance
 - Project status and progress tracking
 - User assignment to projects and tasks
 - Estimated start and end dates for assignments
@@ -238,6 +241,8 @@ Registration creates an organization tenant and its first administrator. The ten
 Signing in with Google using an email that already exists accesses the existing user and tenant instead of creating a duplicate workspace.
 
 Each tenant starts on the `FREE` plan. The workspace creator can view plan information and start a Premium checkout from the profile menu. Payment activation is synchronized through the Asaas API and authenticated, idempotent webhooks.
+
+Free workspaces can have up to five users, including pending invitations, and three projects whose status is not `COMPLETED`. These limits are enforced by GraphQL mutations, so they cannot be bypassed by calling the API directly. Existing data remains available if Premium expires; the workspace must complete projects, reduce usage, or renew Premium before creating resources above the Free allowance.
 
 ## Asaas billing
 

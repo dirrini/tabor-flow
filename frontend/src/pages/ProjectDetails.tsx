@@ -193,7 +193,8 @@ export default function ProjectDetails() {
           query: PROJECT_QUERY,
           variables: { id }
         },
-        { query: PROJECTS_QUERY }
+        { query: PROJECTS_QUERY },
+        { query: ME_QUERY }
       ]
     }
   );
@@ -207,7 +208,8 @@ export default function ProjectDetails() {
     DELETE_PROJECT_MUTATION,
     {
       refetchQueries: [
-        { query: PROJECTS_QUERY }
+        { query: PROJECTS_QUERY },
+        { query: ME_QUERY }
       ]
     }
   );

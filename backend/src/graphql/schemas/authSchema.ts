@@ -16,6 +16,15 @@ export const authSchema = `#graphql
     plan: String!
     subscriptionStatus: String!
     premiumExpiresAt: String
+    usage: WorkspacePlanUsage!
+  }
+
+  type WorkspacePlanUsage {
+    users: Int!
+    userLimit: Int
+    activeProjects: Int!
+    activeProjectLimit: Int
+    consolidatedTimeline: Boolean!
   }
 
   type CheckoutSession {
@@ -92,6 +101,8 @@ export const authSchema = `#graphql
       id: ID!
       input: UpdateUserInput!
     ): User!
+
+    deleteUser(id: ID!): Boolean!
 
     updateMyPassword(
       input: UpdateMyPasswordInput!
