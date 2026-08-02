@@ -142,6 +142,16 @@ export default function Sidebar({
             </Link>
           </li>
 
+          <li>
+            <Link
+              to="/app/reports"
+              onClick={onClose}
+              className="block rounded-lg px-4 py-2 hover:bg-slate-800"
+            >
+              {tr("Relatórios", "Reports")}
+            </Link>
+          </li>
+
           {canViewTimeline && (
             <li>
               <Link

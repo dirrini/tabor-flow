@@ -29,6 +29,8 @@ Production: [https://tabor-flow.dirrini.tech](https://tabor-flow.dirrini.tech)
 - User assignment to projects and tasks
 - Estimated start and end dates for assignments
 - Interactive team Timeline with project, user, status, and date filters
+- Free single-project health reports with task, team, progress, and overdue metrics
+- Premium portfolio and team workload reports with status filters and CSV exports
 - Responsive desktop and mobile navigation
 - User profile and password management
 
@@ -243,6 +245,8 @@ Signing in with Google using an email that already exists accesses the existing 
 Each tenant starts on the `FREE` plan. The workspace creator can view plan information and start a Premium checkout from the profile menu. Payment activation is synchronized through the Asaas API and authenticated, idempotent webhooks.
 
 Free workspaces can have up to five users, including pending invitations, and three projects whose status is not `COMPLETED`. These limits are enforced by GraphQL mutations, so they cannot be bypassed by calling the API directly. Existing data remains available if Premium expires; the workspace must complete projects, reduce usage, or renew Premium before creating resources above the Free allowance.
+
+Reports follow the same plan boundary. Every workspace can generate a live health report for one selected project. An active Premium plan unlocks the tenant-scoped portfolio overview, workload by person, status filtering, and CSV exports. Premium authorization is enforced on the `portfolioReport` GraphQL query rather than only hidden in the frontend.
 
 ## Asaas billing
 

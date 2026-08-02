@@ -131,6 +131,10 @@ export default function Header({
       return "Workspace";
     }
 
+    if (pathname === "/app/reports") {
+      return pt ? "Relatórios" : "Reports";
+    }
+
     return "TaborFlow";
   }, [location.pathname, pt]);
 

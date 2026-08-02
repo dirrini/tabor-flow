@@ -122,6 +122,27 @@ export async function ensureCanActivateProject(
   }
 }
 
+export async function ensurePremiumAccess(
+  tenantId: number
+) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: {
+      plan: true,
+      premiumExpiresAt: true
+    }
+  });
+
+  if (!tenant || !hasPremiumAccess(tenant)) {
+    throw new GraphQLError(
+      "This report is available on the Premium plan.",
+      {
+        extensions: { code: "PREMIUM_REQUIRED" }
+      }
+    );
+  }
+}
+
 export async function lockTenantPlanUsage(
   transaction: Prisma.TransactionClient,
   tenantId: number

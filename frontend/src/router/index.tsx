@@ -14,6 +14,7 @@ import Landing from "../pages/Landing";
 import VerifyEmail from "../pages/VerifyEmail";
 import AcceptInvitation from "../pages/AcceptInvitation";
 import Workspace from "../pages/Workspace";
+import Reports from "../pages/Reports";
 
 export const router =
   createBrowserRouter([
@@ -49,6 +50,10 @@ export const router =
         {
           path: "users",
           element: <Users />
+        },
+        {
+          path: "reports",
+          element: <Reports />
         },
         {
           path: "workspace",

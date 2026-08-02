@@ -33,6 +33,7 @@ const pricingCopy = {
       "Até 3 projetos ativos",
       "Tarefas ilimitadas",
       "Dashboard básico",
+      "Relatório de saúde de um projeto",
       "Timeline de um projeto por vez"
     ],
     premiumFeatures: [
@@ -62,6 +63,7 @@ const pricingCopy = {
       "Up to 3 active projects",
       "Unlimited tasks",
       "Basic dashboard",
+      "Single-project health report",
       "One project at a time in Timeline"
     ],
     premiumFeatures: [

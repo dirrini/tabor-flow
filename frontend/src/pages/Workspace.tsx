@@ -586,6 +586,7 @@ export default function Workspace() {
                   tr("Até 5 usuários", "Up to 5 users"),
                   tr("Até 3 projetos ativos", "Up to 3 active projects"),
                   tr("Tarefas ilimitadas", "Unlimited tasks"),
+                  tr("Relatório de saúde de um projeto", "Single-project health report"),
                   tr("Timeline de um projeto por vez", "One project at a time in Timeline")
                 ].map((feature) => (
                   <li key={feature} className="flex gap-2">

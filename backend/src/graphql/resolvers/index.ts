@@ -1,6 +1,7 @@
 import { projectResolver } from "./projectResolver";
 import { dashboardResolver } from "./dashboardResolver";
 import { authResolver } from "./authResolver";
+import { reportResolver } from "./reportResolver";
 
 export const resolvers = {
   Tenant: authResolver.Tenant,
@@ -9,6 +10,7 @@ export const resolvers = {
     ...projectResolver.Query,
     ...dashboardResolver.Query,
     ...authResolver.Query,
+    ...reportResolver.Query,
 
     health: () =>
       "TaborFlow API is running 🚀"

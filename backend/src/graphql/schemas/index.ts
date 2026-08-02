@@ -1,6 +1,7 @@
 import { projectSchema } from "./projectSchema";
 import { dashboardSchema } from "./dashboardSchema";
 import { authSchema } from "./authSchema";
+import { reportSchema } from "./reportSchema";
 
 export const typeDefs = `#graphql
 
@@ -13,5 +14,7 @@ export const typeDefs = `#graphql
   ${dashboardSchema}
 
   ${authSchema}
+
+  ${reportSchema}
 
 `;
