@@ -82,6 +82,9 @@ tabor-flow/
 |   |-- src/components/      # Shared interface components
 |   |-- src/pages/           # Landing, authentication, and workspace pages
 |   `-- Dockerfile.dev       # Local development image
+|-- postgres/
+|   |-- .env.example         # Local PostgreSQL environment template
+|   `-- Dockerfile           # Local PostgreSQL image
 |-- docker-compose.yml
 `-- README.md
 ```
@@ -92,6 +95,14 @@ tabor-flow/
 
 - Docker Desktop or Docker Engine
 - Docker Compose
+
+Create the local environment files before starting the stack:
+
+```bash
+cp backend/.env.example backend/.env.local
+cp frontend/.env.example frontend/.env.local
+cp postgres/.env.example postgres/.env.local
+```
 
 Start the application:
 
